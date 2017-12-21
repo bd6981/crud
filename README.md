@@ -191,6 +191,16 @@ Router.post('/', (req, res) => {
 })
 ```
 
+###### Testing with Postman
+
+1. Launch Postman.
+2. Enter the URL into the bar at the top of the screen.
+3. Click on headers and add the following...
+     > ![Postman POST header config](./images/postRequestHeader.png)
+4. Then, click on the body tab, select the raw radio button, and enter something like this...
+     > ![Postman POST body config](./images/postRequestBody.png)
+5. Hit send! Scroll down and you'll the response in the panel below.
+
 
 ##### Updating Data
 
@@ -204,6 +214,13 @@ Router.put("/:title", (req, res) => {
 })
 ```
 
+###### Testing with Postman
+
+1. Click on headers and add the following...
+     > ![Postman POST body config](./images/putRequestBody.png)
+     > This will be the JSON object that will replace the object to be updated.
+2. Hit send! Scroll down and you'll the response in the panel below. By default, this should be the old document that got updated. Check `localhost:8080/api/bookmarks/` in your browser to see the updated list.
+
 ##### Deleting Data
 
 > The D in CRUD
@@ -215,6 +232,13 @@ Router.delete("/:title", (req, res) => {
     .then(bookmark => res.json(bookmark))
 })
 ```
+
+###### Testing with Postman
+
+1. Click on headers and add the following...
+     > ![Postman POST body config](./images/deleteRequestBody.png)
+     > This will be the JSON object that will replace the object to be updated.
+2. Hit send! Scroll down and you'll the response in the panel below. By default, this should be the old document that got deleted. Check `localhost:8080/api/bookmarks/` in your browser to see the updated list.
 
 ##### Integration with jQuery App
 
