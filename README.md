@@ -13,6 +13,7 @@
 
 We've just learned about using the handlebars templating engine to handle our views. This is a kind of single-server configuration, where the the server is handling models, views, and controller.
 
+---
 
 <details>
   <summary>
@@ -31,9 +32,11 @@ We've just learned about using the handlebars templating engine to handle our vi
   </ul>
 </details>
 
+---
+
 There is an alternative to the single-server architecture, which is the idea of microservices. We're briefly going to explore microservices as a category, but in the context of this lesson, we'll be talking about how to separate our views from the server. Instead, the server will serve *data in the form of JSON* that a client-side jQuery application will 'consume' and generate content from.
 
-> This an increasingly common pattern in modern web development, especially with the rise of 'serverless' services. You may or may not be familiar with the terms Platform as a Service and Service as a Service, but these are examples of such services. See the Additional Reading header at the end of the lesson for readings on this topic.
+> This an increasingly common pattern in modern web development, especially with the rise of 'serverless' services. You may or may not be familiar with the terms Platform as a Service and Service as a Service, but these are examples of 'serverless' services. See the Additional Reading header at the end of the lesson for readings on this topic.
 
 ## Microservices
 > (10 min, 0:20)
@@ -266,9 +269,17 @@ app.use('/api/bookmarks/', bookmarksController)
 app.listen(PORT, () => console.log(`Live on port ${PORT}`))
 ```
 
-### Book-e Frontend
+### Book-E Frontend
+> 30 min (2:20)
 
-Clone down [this repository](https://git.generalassemb.ly/ga-wdi-exercises/book-e-front) and follow the set up instructions there.
+Clone down [this repository](https://git.generalassemb.ly/ga-wdi-exercises/book-e-front) and follow the set up instructions there. We'll be connecting this with our express back-end.
+
+## Closing 
+> 10 min (2:30)
+
+1. What are microservices?
+2. What role did our back-end play today?
+3. How did the front-end application interact with the back-end?
 
 ## Additional Reading
 - [Introduction to Microservices](https://www.nginx.com/blog/introduction-to-microservices/)
