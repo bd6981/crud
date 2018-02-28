@@ -6,7 +6,7 @@
   - Build a RESTful HTTP API in Express that serves JSON data from a Mongo DB
   - Use Postman to test our RESTful routes
   - Use CORS with our Express API to permit requests from other domains
-  - Use jQuery to consume an Express API
+  - Use JS to consume an Express API
 
 ## Framing 
 > (10 min, 0:10)
