@@ -65,7 +65,7 @@ Let's dive in!
 #### Set Up Book-e Backend
 > (5 min, 0:30)
 
-Clone down the [book-e-backend](https://git.generalassemb.ly/ga-wdi-exercises/book-e-backend) and follow the set-up instructions there. After you're all set up, head back here.
+Clone down the [book-e-backend](https://git.generalassemb.ly/dc-wdi-node-express/book-e-backend) and follow the set-up instructions there. After you're all set up, head back here.
 
 
 #### Codebase Review
@@ -298,7 +298,7 @@ app.listen(PORT, () => console.log(`Live on port ${PORT}`))
 ### Book-E Frontend
 > 30 min (2:20)
 
-Clone down [this repository](https://git.generalassemb.ly/ga-wdi-exercises/book-e-front/tree/wdi21) (USE BRANCH `wdi21`!) and follow the set up instructions there. We'll be connecting this with our express back-end.
+Clone down [this repository](https://git.generalassemb.ly/dc-wdi-node-express/book-e-front/tree/wdi21) (USE BRANCH `wdi21`!) and follow the set up instructions there. We'll be connecting this with our express back-end.
 
 ## Closing 
 > 10 min (2:30)
