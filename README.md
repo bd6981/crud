@@ -231,7 +231,7 @@ app.listen(8080, () => console.log('They see me rollin...on port 8080...'))
 
 ### Book-E Frontend (40 min / 2:05)
 
-Clone down [this repository](https://git.generalassemb.ly/dc-wdi-node-express/book-e-front/tree/wdi21) (USE BRANCH `wdi21`!) and follow the set up instructions there. We'll be connecting this with our express back-end.
+Clone down [this repository](https://git.generalassemb.ly/dc-wdi-node-express/book-e-front/) and follow the set up instructions there. We'll be connecting this with our express back-end.
 
 ## Closing Review (25 min / 2:30)
 
