@@ -21,9 +21,7 @@ build order:
 - index js to setup server, first route
 - cors
 - Seed the db
-
 - we do: build bookmark model
-
 - we do: build one bookmark controller route (GET)
 - we do: bookmark controller POST/create
   - bodyparser
@@ -32,8 +30,7 @@ build order:
 
 afternoon:
 
-- you do: build user model
-  - we do: add refs to user and bookmark
+- we do: add refs to user and bookmark
 - you do: build users GET, POST/create
 - we do: build users UPDATE
 - you do: users DELETE
@@ -414,13 +411,15 @@ You'll use the model method `findOneAndUpdate()` which takes two arguments:
 
 What HTTP verbs should you use for each? What routes should they go on?
 
-Test your code using Postman. Make sure you set the method to PUT on the dropdown. 
+Test your code using Postman. Make sure you set the method to PUT on the
+dropdown.
 
 > 5 min review
 
 ### You do: Delete a record
 
-Deleting follows a similar pattern, this time we just need to delete based on one value. We'll use title again.
+Deleting follows a similar pattern, this time we just need to delete based on
+one value. We'll use title again.
 
 - create a new DELETE route at `/api/bookmarks/:title`
 - use req.params to search for a record to delete
@@ -428,19 +427,19 @@ Deleting follows a similar pattern, this time we just need to delete based on on
 
 > 5 min review
 
+### Bonus: CORS
 
-
-### Integration with a frontend
-
-Next, we'll add the `cors` dependency. CORS stands for cross origin resource
-sharing. Express is enforcing a CORS policy that prevents resource sharing
-without proper configuration on the back end.
+Sometimes we need we'll need to add the `cors` dependency. CORS stands for cross
+origin resource sharing. Express is enforcing a CORS policy that cross-origin requests without proper configuration on the back end.
 
 You can think of origins as website domains, like `localhost:3000`,
 `localhost:8080`, `google.com`, `fuzzy-panda-cat.herokuapp.com`, and so on.
 
+Because our server runs on `localhost:8080`, any requests that come from
+somewhere that is NOT `localhost:8080` will be blocked, by default. So if we had a website that made `fetch()` requests to `localhost:8080`, they would be blocked unless we configure cors in express.
+
 The npm package `cors` is middleware that tells express to accept requests from
-different origins.
+different origins. By default it just enables ALL origins.
 
 > [Here's a good article](https://developer.mozilla.org/en-US/docs/Web/HTTP/CORS)
 > on MDN about what CORS is.
@@ -463,11 +462,10 @@ app.use('/api/bookmarks/', bookmarksController)
 app.listen(8080, () => console.log('They see me rollin...on port 8080...'))
 ```
 
-### Break (10 min / 1:25)
-
 ## Additional Resources
 
-- 
+- Express docs http://expressjs.com/en/4x/api.html
+- mongoose.js docs https://mongoosejs.com/docs/guide.html
 
 ## [License](LICENSE)
 
