@@ -19,7 +19,6 @@
 build order:
 
 - index js to setup server, first route
-- cors
 - Seed the db
 - we do: build bookmark model
 - we do: build one bookmark controller route (GET)
@@ -30,11 +29,16 @@ build order:
 
 afternoon:
 
-- we do: add refs to user and bookmark
+- we do: add refs to user and bookmark models
 - you do: build users GET, POST/create
 - we do: build users UPDATE
 - you do: users DELETE
 - we do: create w/relation
+
+bonus:
+
+- cors
+- redirect from / to /api/bookmarks
 
 ## Framing (5 min, 0:05)
 
@@ -53,11 +57,11 @@ today, but rather build a single service that implements an API over HTTP.
 
 ## Building an API in Express (5 min, 0:10)
 
-For the remainder of class, we'll be building an application called 'book-e'
-which can save bookmarks for us. We'll clone down the back-end for `book-e` and
-examine the a finished version of the codebase, which includes two models to
-start with. Then, we'll add a controller that serves JSON and then test the
-backend using a tool called Postman.
+For this class, we'll be building an application called 'book-e' which can save
+bookmarks for us. We'll clone down the back-end for `book-e` and examine the a
+finished version of the codebase, which includes two models to start with. Then,
+we'll add a controller that serves JSON and then test the backend using a tool
+called Postman.
 
 ## Book-e
 
@@ -65,7 +69,7 @@ backend using a tool called Postman.
 
 Clone down the
 [book-e-json](https://git.generalassemb.ly/dc-wdi-node-express/book-e-json) API
-**FOLLOW THE SET-UP INSTRUCTIONS**.
+and **FOLLOW THE SET-UP INSTRUCTIONS** in that readme.
 
 Download [Postman here](https://app.getpostman.com/app/download/osx64) if you
 don't have it already. You'll need to create an account (free!) to use it.
@@ -75,7 +79,7 @@ don't have it already. You'll need to create an account (free!) to use it.
 Pick a partner! Get up and move your seats! Don't just pick someone next to you.
 
 Then, spend the next 10 minutes looking over the codebase together. There are
-lots of comments explaining stuff.
+lots of comments explaining stuff. Make sure you're on the `solution` branch.
 
 Afterwards, we'll discuss each part of the starting codebase, using the
 commented annotations as our guide.
@@ -85,9 +89,8 @@ Here are some things to think about while browing the codebase:
 - Look at the requires at the top of each file. How do they relate to each
   other?
 - How do we connect to mongoDB?
-- Where are our models stored? What are the properties of each model?
-- What is the router doing?
-- Where are we using the models?
+- Where are we defining the models? Where are they being used?
+- What is the router doing? Where are the routes defined?
 
 If you don't know what's going on in some area of the codebase, write down a
 question and we'll discuss it together.
@@ -147,8 +150,7 @@ trigger that method to run?
 Currently we have two files where models should be. Lets build them out before
 we attempt to use them.
 
-Here's a fully fledged example for the Bookmark model, let's just talk through
-this.
+Here's an example for the Bookmark model, let's just talk through this.
 
 ```js
 // require the mongoose package from the connection pool
@@ -157,14 +159,7 @@ const mongoose = require("../connection")
 // make a new schema with 3 properties, and assign it to a variable
 const BookmarkSchema = new mongoose.Schema({
   title: String,
-  url: String,
-  favorited: [
-    // ref will point to the User schema, once we make it
-    {
-      ref: "User",
-      type: mongoose.Schema.Types.ObjectId
-    }
-  ]
+  url: String
 })
 
 // instantiate the model, calling it "Bookmark" and with the schema we just made
@@ -174,12 +169,11 @@ let bookmark = mongoose.model("Bookmark", BookmarkSchema)
 module.exports = bookmark
 ```
 
-Following this same pattern, try to build out the User model. It should have 3
-properties:
+Following this same pattern, try to build out the User model. It should have 2
+properties. We'll add the relation between them later:
 
 - email: String
 - name: String
-- favorites: ref to the Bookmark model
 
 Check out the
 [mongoose schematypes](https://mongoosejs.com/docs/schematypes.html) for all the
@@ -296,7 +290,7 @@ correctly). The second should show you just one bookmark.
 
 ## Break (10 min)
 
-### Creating Data
+### Creating Data + Body Parser
 
 > The C in CRUD
 
@@ -351,8 +345,8 @@ app.use('/api/bookmarks/', bookmarksController)
 app.listen(8080, () => console.log(`They see me rollin...on port 8080...`))
 ```
 
-Once we have the route defined and bodyParser enabled, we can test send some
-POST requests using postman.
+Once we have the route defined and bodyParser enabled, we can send some POST
+requests using postman.
 
 Postman is a great tool that I hope you use all the time.
 
@@ -372,12 +366,10 @@ Postman is a great tool that I hope you use all the time.
 > we're working with and set the headers for us automatically. Postman makes us
 > do it manually.
 
-What is the response that we get back from our API?
+What is the response that we get back?
 
 Check your console (wherever nodemon is running) and you'll hopefully see some
 output. Postman will also show the response from the server.
-
-// finish create
 
 Now, instead of just console logging this, use the model to actually create a
 record based on the data sent in the POST request.
@@ -427,16 +419,264 @@ one value. We'll use title again.
 
 > 5 min review
 
+## Second half
+
+### CRUD with two related models
+
+So far we've built out CRUD on one model. But in a lot of cases, we have more
+than one, and they relate to each other. We want to be able to query them both
+as they relate.
+
+We'll start by adding relations to both our user and bookmark models.
+
+```js
+const UserSchema = mongoose.Schema({
+  email: String,
+  name: String,
+  favorites: [
+    {
+      ref: "Bookmark",
+      type: mongoose.Schema.Types.ObjectId
+    }
+  ]
+})
+```
+
+```js
+const BookmarkSchema = new mongoose.Schema({
+  title: String,
+  url: String,
+  favorited: [
+    {
+      ref: "User",
+      type: mongoose.Schema.Types.ObjectId
+    }
+  ]
+})
+```
+
+The key is the name of the property. In this case, they point to each other. The
+value is an array of references, with a type called `ObjectId` - these are a
+`Type` that is specific to mongoose. They may look like strings, but they are
+their own ObjectId type, which is why we define them this way.
+
+So if we query a user that has several `favorites`, it will look like an array
+of IDs. Those IDs belong to specific bookmarks. Vice versa for querying
+bookmarks, we'll see IDs that belong to users.
+
+We don't have to do it this way - we could have a one-way relation. But for this
+example, we go both directions.
+
+### You do: GET Users
+
+Using what we covered earlier, build out the route to GET all users.
+
+- use `find()`
+- send a json response
+- test your work using Postman
+
+> 5 min review
+
+### You do: GET one user by email address
+
+Add a new route that gets a single user by email address.
+
+- use the route params, calling it `:email`
+- use `findOne()` instead of `find()`
+- send a json response
+- test your work using Postman
+
+### We do: Create a user
+
+Now that we can query users, lets make a route to create a new user. For now, we
+won't add any relations - just creating a single user without favorites.
+
+This pattern should look familiar. We take the parsed object from the request
+body and pass it directly into `create()`
+
+```js
+router.post("/", (req, res) => {
+  let newUser = req.body
+  User.create(newUser).then(created => {
+    res.json(created)
+  })
+})
+```
+
+This is fine and all, now we can create new users. But what if we want to create
+new users that also have favorite bookmarks, all in one step?
+
+### We do: Create a user with favorited bookmarks
+
+First let's add a new route.
+
+```js
+router.post("/new", (req, res) => {})
+```
+
+Since we're touching both models, we need to make sure we have both `User` and
+`Bookmark` required at the top.
+
+```js
+const User = require("../db/models/User")
+const Bookmark = require("../db/models/Bookmark")
+```
+
+In our controller method we need to use both at the same time. We can do this by
+nesting our creates inside of the `.then()` promises.
+
+Also, because anything we pass in the request body gets parsed into a single
+object and stored in `req.body`, we need to make sure we pass all the
+information we need in a single object.
+
+Here's an example of what that might look like:
+
+```json
+{
+  "user": {
+    "name": "test relation",
+    "email": "test@email.com"
+  },
+  "bookmark": {
+    "title": "test",
+    "url": "http://test.com"
+  }
+}
+```
+
+So we can access the `user` object above in `req.body.user` and the `bookmark`
+object in `req.body.bookmark`. Perfect!
+
+Add the create methods, one inside of the other. We have to do this because
+create is asynchronous, and we want to guarantee that they run in this specific
+order.
+
+```js
+router.post("/new", (req, res) => {
+  User.create(req.body.user).then(newUser => {
+    Bookmark.create(req.body.bookmark).then(newBookmark => {})
+  })
+})
+```
+
+Then inside of the `then()` for bookmark's create, we'll link the two records
+using their ids. We can push the ids directly into the arrays using `.push()`
+
+```js
+router.post("/new", (req, res) => {
+  User.create(req.body.user).then(newUser => {
+    Bookmark.create(req.body.bookmark).then(newBookmark => {
+      newUser.favorites.push(newBookmark._id)
+      newBookmark.favorited.push(newUser._id)
+
+      newUser.save()
+      newBookmark.save()
+
+      res.json(newUser)
+    })
+  })
+})
+```
+
+What's happening here?
+
+- We're creating a user using the model method `.create()`
+- Then we're creating a bookmark using the same method
+- newUser, newBookmark are the newly created user objects
+- We push the respective id of the newly created documents into each others
+  associated arrays
+- If we don't run `save()` the push will never be persisted and the relation
+  will be empty
+- Finally, we send back the entire document as json
+
+There's a lot going on here! But it's really just us combining the two previous
+ideas.
+
+### You do: Favorite a bookmark
+
+See if you can add a route that adds a bookmark to a user's favorites.
+
+This is going to be very similar to the previous exercise!
+
+- You'll need two params, one for the user and one for the bookmark. I prefer
+  ID, but you can use any way to query them
+- use `findOneAndUpdate()` for the user
+- push each id into each others favorite properties
+- save both
+- send a json response of the user object
+- test with postman!
+
+<details>
+<summary>Solution</summary>
+
+```js
+router.put("/:id/:bookmarkId", (req, res) => {
+  let userID = req.params.id
+  let bookmarkID = req.params.bookmarkId
+
+  // find the bookmark by its id
+  Bookmark.findById(bookmarkID).then(mark => {
+    // find the user by its id
+    // could also swap this out with email
+    User.findOneAndUpdate({ _id: userID }).then(user => {
+      // push each id into the others array
+      user.favorites.push(mark._id)
+      mark.favorited.push(user._id)
+      // save both
+      user.save()
+      mark.save()
+
+      // send json response
+      res.json(user)
+    })
+  })
+})
+```
+
+</details>
+
+## Finishing
+
+The UPDATE and DELETE methods follow the same pattern for User as they do for
+Bookmark, which we did earlier. See if you can look at the solution code for
+Bookmark and implement them in the User controller.
+
+### Bonus: Redirects
+
+Since all of our routes are defined on `/api/something`, we sometimes want a
+more user-friendly way to point people in the right direction. Enter the
+redirect.
+
+We'll define a route for the base url (`/`), and have it redirect the user to
+`/api/bookmarks`.
+
+In your index.js file, above the definitions for the API routes:
+
+```js
+app.get("/", (req, res) => {
+  res.redirect("/api/bookmarks")
+})
+```
+
+What we're really doing here is sending back a response that is a redirect,
+rather than HTML or JSON. The browser knows how to handle this, so once it
+receives the redirect response it automatically follows it to the new path. This
+new path is treated as a new request, so the browser then performs a GET request
+to the bookmarks url.
+
 ### Bonus: CORS
 
 Sometimes we need we'll need to add the `cors` dependency. CORS stands for cross
-origin resource sharing. Express is enforcing a CORS policy that cross-origin requests without proper configuration on the back end.
+origin resource sharing. Express is enforcing a CORS policy that cross-origin
+requests without proper configuration on the back end.
 
 You can think of origins as website domains, like `localhost:3000`,
 `localhost:8080`, `google.com`, `fuzzy-panda-cat.herokuapp.com`, and so on.
 
 Because our server runs on `localhost:8080`, any requests that come from
-somewhere that is NOT `localhost:8080` will be blocked, by default. So if we had a website that made `fetch()` requests to `localhost:8080`, they would be blocked unless we configure cors in express.
+somewhere that is NOT `localhost:8080` will be blocked, by default. So if we had
+a website that made `fetch()` requests to `localhost:8080`, they would be
+blocked unless we configure cors in express.
 
 The npm package `cors` is middleware that tells express to accept requests from
 different origins. By default it just enables ALL origins.
@@ -461,6 +701,8 @@ app.use('/api/bookmarks/', bookmarksController)
 
 app.listen(8080, () => console.log('They see me rollin...on port 8080...'))
 ```
+
+</details>
 
 ## Additional Resources
 
