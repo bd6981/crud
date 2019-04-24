@@ -14,32 +14,6 @@
 - Use Postman to test our routes
 - Use CORS with our Express API to permit requests from other domains
 
-# TODO
-
-build order:
-
-- index js to setup server, first route
-- Seed the db
-- we do: build bookmark model
-- we do: build one bookmark controller route (GET)
-- we do: bookmark controller POST/create
-  - bodyparser
-- update route
-- delete route
-
-afternoon:
-
-- we do: add refs to user and bookmark models
-- you do: build users GET, POST/create
-- we do: build users UPDATE
-- you do: users DELETE
-- we do: create w/relation
-
-bonus:
-
-- cors
-- redirect from / to /api/bookmarks
-
 ## Framing (5 min, 0:05)
 
 Instead of directly rendering a view (as HTML), the server will serve **data in
