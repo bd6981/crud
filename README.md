@@ -33,9 +33,11 @@ today, but rather build a single service that implements an API over HTTP.
 
 For this class, we'll be building an application called 'book-e' which can save
 bookmarks for us. We'll clone down the back-end for `book-e` and examine the a
-finished version of the codebase, which includes two models to start with. Then,
-we'll add a controller that serves JSON and then test the backend using a tool
-called Postman.
+finished version of the codebase, which includes two related models. Then we'll
+build it out piece by piece, for the rest of the day.
+
+The goal is to use the finished codebase as our guideline, so if we ever get
+lost or stuck, we have something to reference.
 
 ## Book-e
 
@@ -221,7 +223,7 @@ router.get("/:title", (req, res) => {
 ```
 
 What's up with this `:title` syntax though? This is how we tell express to
-expect a `variable` to be passed in. In this case it's called a `param` and
+expect a **variable** to be passed in. In this case it's called a `param` and
 express will interpret it and give it to us in the request object, in another
 object called `params`.
 
@@ -247,20 +249,31 @@ router.get("/:title", (req, res) => {
 })
 ```
 
-### Testing routes
+### GET requests with Postman
+
+Launch Postman. Make sure you're logged in (create an account if you don't have
+one).
+
+Ensure `mongod` and `nodemon` are running with no errors.
+
+- Enter `localhost:8080/api/bookmarks/` in the address bar
+- Ensure the dropdown says `GET`
+- Click `Send`
+
+You should see the response below, containing all the bookmarks!
+
+Also test the route `localhost:8080/api/bookmarks/reddit`. You should see a
+single bookmark as the response.
 
 Now let's test these routes in the browser!
 
 > Note: In URLs, spaces are represented with `%20`.
 
-Make sure `nodemon` is running and you don't have any errors, and open two
-routes in your browser:
+Make sure `nodemon` is running and you don't have any errors, and open the same
+two urls.
 
-- `localhost:8080/api/bookmarks/`
-- `localhost:8080/api/bookmarks/reddit`
-
-The first should show you every bookmark in the database (if you seeded it
-correctly). The second should show you just one bookmark.
+If we're just testing GET routes, we can use either Postman or the browser. But
+for anything more, we need to use postman, because its easier to send data.
 
 ## Break (10 min)
 
@@ -324,10 +337,10 @@ requests using postman.
 
 Postman is a great tool that I hope you use all the time.
 
-### Testing with Postman
+### Sending Data with Postman
 
 1. Launch Postman.
-2. Enter the URL into the bar at the top of the screen.
+2. Enter `localhost:8080/api/bookmarks` into the bar at the top of the screen.
 3. Click on headers and add the following...
    > ![Postman POST header config](./images/postRequestHeader.png)
 4. Then, click on the body tab, select the `raw` radio button, and enter
@@ -440,6 +453,8 @@ bookmarks, we'll see IDs that belong to users.
 
 We don't have to do it this way - we could have a one-way relation. But for this
 example, we go both directions.
+
+> How is this different from just embedding one schema inside another?
 
 ### You do: GET Users
 
