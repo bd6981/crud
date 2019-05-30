@@ -83,7 +83,7 @@ In your `index.js` file add this below the requires:
 
 ```js
 // instantiate express
-const app = express()
+const app = express();
 ```
 
 This is great! Now our server should run with `nodemon`. But it doesn't do
@@ -94,13 +94,13 @@ code:
 
 ```js
 // at the top
-const bookmarksController = require("./controllers/bookmarks")
-const userController = require("./controllers/users")
+const bookmarksController = require("./controllers/bookmarks");
+const userController = require("./controllers/users");
 
 // ... below express()
 
-app.use("/api/bookmarks/", bookmarksController)
-app.use("/api/users/", userController)
+app.use("/api/bookmarks/", bookmarksController);
+app.use("/api/users/", userController);
 ```
 
 Great!
@@ -130,19 +130,19 @@ Here's an example for the Bookmark model, let's just talk through this.
 
 ```js
 // require the mongoose package from the connection pool
-const mongoose = require("../connection")
+const mongoose = require("../connection");
 
 // make a new schema with 3 properties, and assign it to a variable
 const BookmarkSchema = new mongoose.Schema({
   title: String,
   url: String
-})
+});
 
 // instantiate the model, calling it "Bookmark" and with the schema we just made
-let bookmark = mongoose.model("Bookmark", BookmarkSchema)
+let bookmark = mongoose.model("Bookmark", BookmarkSchema);
 
 // export the newly created model
-module.exports = bookmark
+module.exports = bookmark;
 ```
 
 Following this same pattern, try to build out the User model. It should have 2
@@ -164,8 +164,8 @@ empty.
 
 ```js
 router.get("/", (req, res) => {
-  res.send("<h1>Sup Multiverse?</h1>")
-})
+  res.send("<h1>Sup Multiverse?</h1>");
+});
 ```
 
 As expected, when you go to `http://localhost:8080/apis/bookmarks`, you see an
@@ -175,8 +175,8 @@ Now, let's send a json response instead of plain html.
 
 ```js
 router.get("/", (req, res) => {
-  res.json({ hello: "multiverse" })
-})
+  res.json({ hello: "multiverse" });
+});
 ```
 
 <details>
@@ -199,12 +199,12 @@ Next, let's fill out the routes for **reading** from the database.
 ```js
 //...
 // import the bookmark model
-const Bookmark = require("../db/models/Bookmark")
+const Bookmark = require("../db/models/Bookmark");
 
 router.get("/", (req, res) => {
   // use the bookmark model to find all bookmarks
-  Bookmark.find({}).then(bookmarks => res.json(bookmarks))
-})
+  Bookmark.find({}).then(bookmarks => res.json(bookmarks));
+});
 
 //...
 ```
@@ -217,9 +217,9 @@ First let's add the route and console log:
 
 ```js
 router.get("/:title", (req, res) => {
-  console.log("it works")
-  res.send("here is the title")
-})
+  console.log("it works");
+  res.send("here is the title");
+});
 ```
 
 What's up with this `:title` syntax though? This is how we tell express to
@@ -229,9 +229,9 @@ object called `params`.
 
 ```js
 router.get("/:title", (req, res) => {
-  console.log(req.params)
-  res.send("here is the title: " + req.params.title)
-})
+  console.log(req.params);
+  res.send("here is the title: " + req.params.title);
+});
 ```
 
 So if we visit `localhost:8080/api/bookmarks/reddit` then `req.params.title`
@@ -245,8 +245,8 @@ router.get("/:title", (req, res) => {
   // use the model to look up a bookmark by title
   Bookmark.find({ title: req.params.title }).then(bookmarks =>
     res.json(bookmarks)
-  )
-})
+  );
+});
 ```
 
 ### GET requests with Postman
@@ -291,13 +291,13 @@ This is the convention we usually use to create data.
 
 ```js
 router.post("/", (req, res) => {
-  let newBookmark = req.body
+  let newBookmark = req.body;
   // option 1
   // console log the request body
-  console.log(newBookmark)
+  console.log(newBookmark);
   // and send the request back just as we received it
-  res.json(newBookmark)
-})
+  res.json(newBookmark);
+});
 ```
 
 Unfortunately, this won't work without some additional setup.
@@ -363,10 +363,10 @@ record based on the data sent in the POST request.
 
 ```js
 router.post("/", (req, res) => {
-  let newBookmark = req.body
+  let newBookmark = req.body;
 
-  Bookmark.create(req.body).then(bookmark => res.json(bookmark))
-})
+  Bookmark.create(req.body).then(bookmark => res.json(bookmark));
+});
 ```
 
 ### You do: Updating Data (15 min)
@@ -383,10 +383,14 @@ methods, try the following:
 - use the parameter to search for a record (see below)
 - use req.body to pass in the data to the model
 
-You'll use the model method `findOneAndUpdate()` which takes two arguments:
+You'll use the model method `findOneAndUpdate()` which takes three arguments:
 
 - the query to find a record to be updated (same as `find({})` uses)
 - the new data to update the old record (an object)
+- an additional option so Mongoose returns the updated document (the default is
+  the original document). You can read more about the possible options
+  [here](https://mongoosejs.com/docs/api.html#model_Model.findOneAndUpdate), and
+  this does not have to be anything more `{ new: true }` as the third argument
 
 What HTTP verbs should you use for each? What routes should they go on?
 
@@ -426,7 +430,7 @@ const UserSchema = mongoose.Schema({
       type: mongoose.Schema.Types.ObjectId
     }
   ]
-})
+});
 ```
 
 ```js
@@ -439,7 +443,7 @@ const BookmarkSchema = new mongoose.Schema({
       type: mongoose.Schema.Types.ObjectId
     }
   ]
-})
+});
 ```
 
 The key is the name of the property. In this case, they point to each other. The
@@ -485,11 +489,11 @@ body and pass it directly into `create()`
 
 ```js
 router.post("/", (req, res) => {
-  let newUser = req.body
+  let newUser = req.body;
   User.create(newUser).then(created => {
-    res.json(created)
-  })
-})
+    res.json(created);
+  });
+});
 ```
 
 This is fine and all, now we can create new users. But what if we want to create
@@ -500,15 +504,15 @@ new users that also have favorite bookmarks, all in one step?
 First let's add a new route.
 
 ```js
-router.post("/new", (req, res) => {})
+router.post("/new", (req, res) => {});
 ```
 
 Since we're touching both models, we need to make sure we have both `User` and
 `Bookmark` required at the top.
 
 ```js
-const User = require("../db/models/User")
-const Bookmark = require("../db/models/Bookmark")
+const User = require("../db/models/User");
+const Bookmark = require("../db/models/Bookmark");
 ```
 
 In our controller method we need to use both at the same time. We can do this by
@@ -543,9 +547,9 @@ order.
 ```js
 router.post("/new", (req, res) => {
   User.create(req.body.user).then(newUser => {
-    Bookmark.create(req.body.bookmark).then(newBookmark => {})
-  })
-})
+    Bookmark.create(req.body.bookmark).then(newBookmark => {});
+  });
+});
 ```
 
 Then inside of the `then()` for bookmark's create, we'll link the two records
@@ -555,16 +559,16 @@ using their ids. We can push the ids directly into the arrays using `.push()`
 router.post("/new", (req, res) => {
   User.create(req.body.user).then(newUser => {
     Bookmark.create(req.body.bookmark).then(newBookmark => {
-      newUser.favorites.push(newBookmark._id)
-      newBookmark.favorited.push(newUser._id)
+      newUser.favorites.push(newBookmark._id);
+      newBookmark.favorited.push(newUser._id);
 
-      newUser.save()
-      newBookmark.save()
+      newUser.save();
+      newBookmark.save();
 
-      res.json(newUser)
-    })
-  })
-})
+      res.json(newUser);
+    });
+  });
+});
 ```
 
 What's happening here?
@@ -600,8 +604,8 @@ This is going to be very similar to the previous exercise!
 
 ```js
 router.put("/:id/:bookmarkId", (req, res) => {
-  let userID = req.params.id
-  let bookmarkID = req.params.bookmarkId
+  let userID = req.params.id;
+  let bookmarkID = req.params.bookmarkId;
 
   // find the bookmark by its id
   Bookmark.findById(bookmarkID).then(mark => {
@@ -609,17 +613,17 @@ router.put("/:id/:bookmarkId", (req, res) => {
     // could also swap this out with email
     User.findOneAndUpdate({ _id: userID }).then(user => {
       // push each id into the others array
-      user.favorites.push(mark._id)
-      mark.favorited.push(user._id)
+      user.favorites.push(mark._id);
+      mark.favorited.push(user._id);
       // save both
-      user.save()
-      mark.save()
+      user.save();
+      mark.save();
 
       // send json response
-      res.json(user)
-    })
-  })
-})
+      res.json(user);
+    });
+  });
+});
 ```
 
 </details>
@@ -643,8 +647,8 @@ In your index.js file, above the definitions for the API routes:
 
 ```js
 app.get("/", (req, res) => {
-  res.redirect("/api/bookmarks")
-})
+  res.redirect("/api/bookmarks");
+});
 ```
 
 What we're really doing here is sending back a response that is a redirect,
