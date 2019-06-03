@@ -95,12 +95,12 @@ code:
 ```js
 // at the top
 const bookmarksController = require("./controllers/bookmarks");
-const userController = require("./controllers/users");
+const usersController = require("./controllers/users");
 
 // ... below express()
 
 app.use("/api/bookmarks/", bookmarksController);
-app.use("/api/users/", userController);
+app.use("/api/users/", usersController);
 ```
 
 Great!
@@ -139,10 +139,10 @@ const BookmarkSchema = new mongoose.Schema({
 });
 
 // instantiate the model, calling it "Bookmark" and with the schema we just made
-let bookmark = mongoose.model("Bookmark", BookmarkSchema);
+const Bookmark = mongoose.model("Bookmark", BookmarkSchema);
 
 // export the newly created model
-module.exports = bookmark;
+module.exports = Bookmark;
 ```
 
 Following this same pattern, try to build out the User model. It should have 2
