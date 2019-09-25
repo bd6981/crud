@@ -14,7 +14,7 @@
 - Use Postman to test our routes
 - Use CORS with our Express API to permit requests from other domains
 
-## Framing (5 min, 0:05)
+## Framing
 
 Instead of directly rendering a view (as HTML), the server will serve **data in
 the form of JSON** that a client-side JS application will 'consume' and generate
@@ -29,7 +29,7 @@ content from.
 We're not going to build a super complex application with many sets of endpoints
 today, but rather build a single service that implements an API over HTTP.
 
-## Building an API in Express (5 min, 0:10)
+## Building an API in Express
 
 For this class, we'll be building an application called 'book-e' which can save
 bookmarks for us. We'll clone down the back-end for `book-e` and examine the a
@@ -41,16 +41,16 @@ lost or stuck, we have something to reference.
 
 ## Book-e
 
-### Set Up Book-e Backend (5 min, 0:15)
+### Set Up Book-e Backend
 
 Clone down the
-[book-e-json](https://git.generalassemb.ly/dc-wdi-node-express/book-e-json) API
+[book-e-json](https://git.generalassemb.ly/seir-826/book-e-json) API
 and **FOLLOW THE SET-UP INSTRUCTIONS** in that readme.
 
 Download [Postman here](https://app.getpostman.com/app/download/osx64) if you
 don't have it already. You'll need to create an account (free!) to use it.
 
-### Codebase Review (15 min, 0:30)
+### Codebase Review (15 min)
 
 Pick a partner! Get up and move your seats! Don't just pick someone next to you.
 
