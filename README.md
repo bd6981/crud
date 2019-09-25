@@ -50,11 +50,9 @@ and **FOLLOW THE SET-UP INSTRUCTIONS** in that readme.
 Download [Postman here](https://app.getpostman.com/app/download/osx64) if you
 don't have it already. You'll need to create an account (free!) to use it.
 
-### Codebase Review (15 min)
+### Codebase Review (10 min)
 
-Pick a partner! Get up and move your seats! Don't just pick someone next to you.
-
-Then, spend the next 10 minutes looking over the codebase together. There are
+Pick a partner! Then, spend the next 10 minutes looking over the codebase together. There are
 lots of comments explaining stuff. Make sure you're on the `solution` branch.
 
 Afterwards, we'll discuss each part of the starting codebase, using the
