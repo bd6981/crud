@@ -44,7 +44,7 @@ lost or stuck, we have something to reference.
 ### Set Up Book-e Backend
 
 Clone down the
-[book-e-json](https://git.generalassemb.ly/seir-826/book-e-json) API
+[book-e-json](https://git.generalassemb.ly/seir-129/book-e-json) API
 and **FOLLOW THE SET-UP INSTRUCTIONS** in that readme.
 
 Download [Postman here](https://app.getpostman.com/app/download/osx64) if you
