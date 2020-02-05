@@ -304,7 +304,7 @@ Express needs to be told how to handle certain types of requests - in this case,
 a POST request that also contains some JSON (since that's what we'll be
 sending).
 
-We'll use add the `express.json` middleware to be able to interpret the
+We'll add the `express.json` middleware to be able to interpret the
 request body. This will automatically parse the json and put it into the
 `request` object for us.
 
@@ -323,7 +323,7 @@ const bookmarksController = require('./controllers/bookmarks')
 app.use(express.json())
 
 // this parses requests that may use a different content type
-app.use(parser.urlencoded({ extended: true }));
+app.use(express.urlencoded({ extended: true }));
 
 
 app.use('/api/bookmarks/', bookmarksController)
@@ -690,7 +690,7 @@ const app = express()
 // The method `.use` sets up middleware for the Express application
 app.use(express.json())
 // this parses requests that may use a different content type
-app.use(parser.urlencoded({ extended: true }));
+app.use(express.urlencoded({ extended: true }));
 
 app.use('/api/bookmarks/', bookmarksController)
 
