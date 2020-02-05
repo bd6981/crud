@@ -340,10 +340,13 @@ Postman is a great tool that I hope you use all the time.
 
 1. Launch Postman.
 2. Enter `localhost:8080/api/bookmarks` into the bar at the top of the screen.
-3. Click on headers and add the following...
+3. Click on headers and add the following
+	- Select `POST` as the request type
+	- Under headers tab, specify the `Content-Type` as `application/json`. This allows the 
+	client tells the server what type of data is actually sent.
    > ![Postman POST header config](./images/postRequestHeader.png)
 4. Then, click on the body tab, select the `raw` radio button, and enter
-   something like this...
+   the new bookmark we'd like to create in the database.
    > ![Postman POST body config](./images/postRequestBody.png)
 5. Hit send! Scroll down and you'll the response in the panel below.
 
