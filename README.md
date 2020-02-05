@@ -47,7 +47,7 @@ Clone down the
 [book-e-json](https://git.generalassemb.ly/seir-129/book-e-json) API
 and **FOLLOW THE SET-UP INSTRUCTIONS** in that readme.
 
-Download [Postman here](https://app.getpostman.com/app/download/osx64) if you
+Download [Postman here](https://www.postman.com/downloads/) if you
 don't have it already. You'll need to create an account (free!) to use it.
 
 ### Codebase Review (10 min)
