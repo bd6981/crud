@@ -304,7 +304,7 @@ Express needs to be told how to handle certain types of requests - in this case,
 a POST request that also contains some JSON (since that's what we'll be
 sending).
 
-We'll use an npm package called `body-parser` to be able to interpret the
+We'll use add the `express.json` middleware to be able to interpret the
 request body. This will automatically parse the json and put it into the
 `request` object for us.
 
@@ -312,17 +312,18 @@ Let's require and configure it in `index.js`...
 
 ```diff
 const express             = require('express')
-+const parser              = require('body-parser')
 
 const app = express()
 
 const bookmarksController = require('./controllers/bookmarks')
 
-// interprets key value pairs in URLs
-+app.use(parser.urlencoded({extended: true}))
+// add `express.json` middleware which will parse JSON requests into
+// JS objects before they reach the route files.
+// The method `.use` sets up middleware for the Express application
+app.use(express.json())
 
-// converts a json string to the an object and attaches it to req.body
-+app.use(parser.json())
+// this parses requests that may use a different content type
+app.use(parser.urlencoded({ extended: true }));
 
 
 app.use('/api/bookmarks/', bookmarksController)
@@ -330,7 +331,7 @@ app.use('/api/bookmarks/', bookmarksController)
 app.listen(8080, () => console.log(`They see me rollin...on port 8080...`))
 ```
 
-Once we have the route defined and bodyParser enabled, we can send some POST
+Once we have the route defined and JSON parsing enabled, we can send some POST
 requests using postman.
 
 Postman is a great tool that I hope you use all the time.
@@ -678,15 +679,18 @@ different origins. By default it just enables ALL origins.
 ```diff
 const express             = require('express')
 const bookmarksController = require('./controllers/bookmarks')
-const parser              = require('body-parser')
 +const cors               = require('cors')
 
 const app = express()
 
 +app.use(cors())
 
-app.use(parser.urlencoded({extended: true}))
-app.use(parser.json())
+// add `express.json` middleware which will parse JSON requests into
+// JS objects before they reach the route files.
+// The method `.use` sets up middleware for the Express application
+app.use(express.json())
+// this parses requests that may use a different content type
+app.use(parser.urlencoded({ extended: true }));
 
 app.use('/api/bookmarks/', bookmarksController)
 
