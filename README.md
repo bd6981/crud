@@ -659,7 +659,7 @@ receives the redirect response it automatically follows it to the new path. This
 new path is treated as a new request, so the browser then performs a GET request
 to the bookmarks url.
 
-### Bonus: CORS
+### CORS
 
 Sometimes we need we'll need to add the `cors` dependency. CORS stands for cross
 origin resource sharing. Express is enforcing a CORS policy that cross-origin
