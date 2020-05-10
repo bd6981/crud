@@ -310,11 +310,9 @@ request body. This will automatically parse the json and put it into the
 
 Let's require and configure it in `index.js`...
 
-```diff
-const express             = require('express')
-
+```js
+const express = require('express')
 const app = express()
-
 const bookmarksController = require('./controllers/bookmarks')
 
 // add `express.json` middleware which will parse JSON requests into
@@ -324,7 +322,6 @@ app.use(express.json())
 
 // this parses requests that may use a different content type
 app.use(express.urlencoded({ extended: true }));
-
 
 app.use('/api/bookmarks/', bookmarksController)
 
