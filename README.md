@@ -633,7 +633,7 @@ The UPDATE and DELETE methods follow the same pattern for User as they do for
 Bookmark, which we did earlier. See if you can look at the solution code for
 Bookmark and implement them in the User controller.
 
-### Bonus: Redirects
+### Redirects
 
 Since all of our routes are defined on `/api/something`, we sometimes want a
 more user-friendly way to point people in the right direction. Enter the
