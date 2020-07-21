@@ -29,6 +29,71 @@ content from.
 We're not going to build a super complex application with many sets of endpoints
 today, but rather build a single service that implements an API over HTTP.
 
+## REST
+
+**REST**, or REpresentational State Transfer, is a convention that standardizes how clients make requests to servers.
+
+Knowing REST is important because the vast majority of web developers have agreed to follow this same convention.
+
+The web as we know it transfers data via HTTP, or Hyper-Text Transfer Protocol, which is a common convention used for **REST**. HTTP specifies that a server receives a **request** from a client and then delivers a corresponding **response**.
+
+Remember: a server's job is to respond to HTTP requests. In order to talk about how Express methods can respond to different HTTP verbs, we need to talk about how HTTP requests work.
+
+Every HTTP request consists of a request **method** and **path**. The **path** is the part of the URL following the domain. We likely have noticed paths when navigating the web. What is the path for this lesson?
+
+Your browser always sends that request in a _particular way_ that gives the server a hint as to the purpose of the request. This _particular way_ is the **method**.
+
+"GET" is one of these methods. It means the browser just wants to read (or "get") some information. When you write `app.get('/say_hi', (req, res) => {})`, you're telling your server how to respond when a browser says, "Hey, I'd like to get some information from the `/say_hi` path."
+
+We make requests all the time -- especially `GET` requests. Every time you go to your browser, enter a URL, and hit enter, you're actually making a `GET` request.
+
+### RESTful HTTP Methods
+
+HTTP defines five main methods, each of which corresponds to one of the CRUD functionalities.
+
+| Method | Crud functionality | DB Action            |
+| ------ | ------------------ | -------------------- |
+| GET    | read               | retrieve data        |
+| POST   | create             | add data             |
+| PUT    | update             | modify existing data |
+| PATCH  | update             | modify existing data |
+| DELETE | delete             | delete existing data |
+
+So, wait -- there are 5 REST methods, but only 4 CRUD methods?
+
+`PUT` and `PATCH` are both used for updating. Whenever you update your Facebook profile you're probably making a `PUT` or `PATCH` request. The difference is `PUT` would be intended to completely replace your profile, whereas `PATCH` would be intended to just change a few fields of your profile.
+
+To clarify further, `PATCH` is replacing part of the data and `PUT` is replacing the whole thing.
+
+### What's the difference at a technical level between a GET and a POST request?
+
+There is of course the difference in the METHOD type, but also in the request payload. A `POST` request for instance will contain all of the data necessary for creating some new object.
+
+GET is for when you want to read something. The parameters of the GET request are used for identifying which piece of data the client would like to read. The parameters of the POST request are used for defining a new piece of data.
+
+### RESTful Routes
+
+A **route** is a **method** plus a **path**...
+
+**Method + Path = Route**
+
+Each route results in an **action**.
+
+REST can be translated in to RESTful Routes (routes that follow REST):
+
+| Method | Path          | Action                                                               |
+| ------ | ------------- | -------------------------------------------------------------------- |
+| GET    | `/engineers`   | Read information about all engineers                                 |
+| POST   | `/engineers`   | Create a new engineer                                                |
+| GET    | `/engineers/1` | Read information about the engineer whose ID is 1                    |
+| PUT    | `/engineers/1` | Update the existing engineer whose ID is 1 with all new content      |
+| PATCH  | `/engineers/1` | Update the existing engineer whose ID is 1 with partially new content|
+| DELETE | `/engineers/1` | Delete the existing engineer whose ID is 1                           |
+
+Note that the path doesn't contain any of the words describing the CRUD functionality that will be executed. That's the method's job.
+
+These routes are important to keep in mind as we build out our controllers. For a resource with full CRUD, the controller for that resource will likely have each of the above 7 routes.
+
 ## Building an API in Express
 
 For this class, we'll be building an application called 'book-e' which can save
