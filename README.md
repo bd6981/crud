@@ -109,7 +109,7 @@ lost or stuck, we have something to reference.
 ### Set Up Book-e Backend
 
 Clone down the
-[book-e-json](https://git.generalassemb.ly/seir-323/book-e-json) API
+[book-e-json](https://git.generalassemb.ly/seir-622/book-e-json) API
 and **FOLLOW THE SET-UP INSTRUCTIONS** in that readme.
 
 Download [Postman here](https://www.postman.com/downloads/) if you
@@ -117,8 +117,9 @@ don't have it already. You'll need to create an account (free!) to use it.
 
 ### Codebase Review (10 min)
 
-Pick a partner! Then, spend the next 10 minutes looking over the codebase together. There are
-lots of comments explaining stuff. Make sure you're on the `solution` branch.
+Spend the next 10 minutes looking over the codebase in your breakout group. 
+There are lots of comments explaining stuff. Make sure you're on the `solution` 
+branch.
 
 Afterwards, we'll discuss each part of the starting codebase, using the
 commented annotations as our guide.
