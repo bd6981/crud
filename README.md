@@ -109,7 +109,7 @@ lost or stuck, we have something to reference.
 ### Set Up Book-e Backend
 
 Clone down the
-[book-e-json](https://git.generalassemb.ly/seir-622/book-e-json) API
+[book-e-json](https://git.generalassemb.ly/sei-921/book-e-json) API
 and **FOLLOW THE SET-UP INSTRUCTIONS** in that readme.
 
 Download [Postman here](https://www.postman.com/downloads/) if you
