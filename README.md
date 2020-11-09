@@ -245,7 +245,7 @@ const Bookmark = require("../models/Bookmark");
 
 
 // Index: GET all the bookmarks
-router.get("/", (req, res) => {
+router.get("/", (req, res, next) => {
   // 1. Get all of the bookmarks from the DB
   Bookmark.find({})
     // 2. Send them back to the client as JSON
