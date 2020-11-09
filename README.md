@@ -347,7 +347,7 @@ There are a bunch of different methods we can use to retrieve data, but there's
 really only one used to create new data: `.create()`
 
 ```js
-router.post("/", (req, res) => {
+router.post("/", (req, res, next) => {
   // 1. Use the data in the req body to create a new bookmark
   Bookmark.create(req.body)
     // 2. If the create is successful, send back the record that was inserted
@@ -506,10 +506,12 @@ This pattern should look familiar. We take the parsed object from the request
 body and pass it directly into `create()`
 
 ```js
-router.post("/", (req, res) => {
-  User.create(req.body).then(user => {
-    res.json(user);
-  });
+router.post("/", (req, res, next) => {
+  User.create(req.body)
+    .then(user => {
+      res.json(user);
+    })
+    .catch(next)
 });
 ```
 
@@ -564,7 +566,7 @@ router.get('/:id', (req, res, next) => {
 Test the results in the browser or Postman!!!
 
 
-### Redirects
+## Redirects
 
 Since all of our routes are defined on `/api/something`, we sometimes want a
 more user-friendly way to point people in the right direction. Enter the
@@ -587,7 +589,7 @@ receives the redirect response it automatically follows it to the new path. This
 new path is treated as a new request, so the browser then performs a GET request
 to the bookmarks url.
 
-### CORS
+## CORS
 
 Sometimes we need we'll need to add the `cors` dependency. CORS stands for cross
 origin resource sharing. Express is enforcing a CORS policy that cross-origin
@@ -619,6 +621,23 @@ const app = express()
 ```
 
 </details>
+
+## Handling Errors
+
+We've been using the `next` parameter in our controllers to pass our errors onto the _"next"_ piece of middleware in our application.  At this point we don't have anything to do the job of handling the errors though, so let's add something to do that.  Inside the `index.js` add the following code **right after the comment ending the controllers**:
+
+```js
+...
+/* END CONTROLLERS HERE */
+
+app.use((err, req, res, next) => {
+  const statusCode = res.statusCode || 500;
+  const message = err.message || 'Internal Server Error';
+  res.status(statusCode).send(message);
+});
+```
+
+Because we need to send an error back to the client if something goes wrong, we're going to check the errors that get passed through this middleware for a status code and a message, if none exists, we'll just use a generic 500 Internal Server Error.  The `res.status()` method allows us to set the status on an outgoing response, but it won't actually send the response.  We'll use the `send()` method to handle sending the response and give it the message stored in our variable.
 
 ## Additional Resources
 
