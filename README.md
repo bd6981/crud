@@ -524,7 +524,7 @@ const mongoose = require('./connection');
 
 const Bookmark = require('../models/Bookmark');
 const User = require('../models/User');
-const bookmarkseeds = require('./seed.json');
+const bookmarkseeds = require('./seeds.json');
 
 Bookmark.deleteMany({})
   .then(() => User.deleteMany({}))
