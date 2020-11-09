@@ -147,7 +147,7 @@ Here's an example for the Bookmark model, let's just talk through this.
 // require the mongoose package from the connection pool
 const mongoose = require("../connection");
 
-// make a new schema with 3 properties, and assign it to a variable
+// make a new schema with 2 properties, and assign it to a variable
 const BookmarkSchema = new mongoose.Schema({
   title: String,
   url: String
