@@ -515,7 +515,48 @@ router.post("/", (req, res) => {
 
 ## Using Population
 
+Let's change up our seeds.js file so that we can quickly delete everything in the database and add a new user as our owner of a bunch of bookmarks:
 
+```js
+const mongoose = require('./connection');
+
+const Bookmark = require('../models/Bookmark');
+const User = require('../models/User');
+const bookmarkseeds = require('./seed.json');
+
+Bookmark.deleteMany({}).then(() => {
+  User.create({ email: 'fake@email.com', name: 'Fake Person' })
+    .then((user) =>
+      bookmarkseeds.map((bookmark) => ({ ...bookmark, owner: user._id }))
+    )
+    .then((bookmarks) => Bookmark.insertMany(bookmarks))
+    .then(console.log)
+    .catch(console.error);
+});
+
+```
+
+Now we can see that the bookmarks all have an owner assigned to them.  We could use a second API call to get the details for the owner, but Mongoose makes it easy to add virtual data to our response object with the `.populate()` method. Change the index and show routes for the bookmarks as follows:
+
+```js
+
+router.get('/', (req, res, next) => {
+  Bookmark.find({})
+    .populate('owner')
+    .then((bookmarks) => res.json(bookmarks))
+    .catch(next);
+});
+
+router.get('/:id', (req, res, next) => {
+  Bookmark
+    .findById(req.params.id)
+    .populate('owner')
+    .then((bookmark) => res.json(bookmark))
+    .catch(next);
+});
+```
+
+Test the results in the browser or Postman!!!
 
 
 ### Redirects
@@ -562,24 +603,14 @@ different origins. By default it just enables ALL origins.
 > on MDN about what CORS is.
 
 ```diff
-const express             = require('express')
-const bookmarksController = require('./controllers/bookmarks')
-+const cors               = require('cors')
+const express = require('express')
++const cors = require('cors')
 
 const app = express()
 
 +app.use(cors())
 
-// add `express.json` middleware which will parse JSON requests into
-// JS objects before they reach the route files.
-// The method `.use` sets up middleware for the Express application
-app.use(express.json())
-// this parses requests that may use a different content type
-app.use(express.urlencoded({ extended: true }));
 
-app.use('/api/bookmarks/', bookmarksController)
-
-app.listen(8080, () => console.log('They see me rollin...on port 8080...'))
 ```
 
 </details>
