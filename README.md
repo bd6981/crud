@@ -29,7 +29,9 @@ content from.
 We're not going to build a super complex application with many sets of endpoints
 today, but rather build a single service that implements an API over HTTP.
 
-## REST
+## Review
+
+### REST
 
 **REST**, or REpresentational State Transfer, is a convention that standardizes how clients make requests to servers.
 
@@ -43,7 +45,7 @@ Every HTTP request consists of a request **method** and **path**. The **path** i
 
 Your browser always sends that request in a _particular way_ that gives the server a hint as to the purpose of the request. This _particular way_ is the **method**.
 
-"GET" is one of these methods. It means the browser just wants to read (or "get") some information. When you write `app.get('/say_hi', (req, res) => {})`, you're telling your server how to respond when a browser says, "Hey, I'd like to get some information from the `/say_hi` path."
+"GET" is one of these methods. It means the browser just wants to read (or "get") some information. When you write `app.get('/books', (req, res) => {})`, you're telling your server how to respond when a browser says, "Hey, I'd like to get some information from the `/books` path."
 
 We make requests all the time -- especially `GET` requests. Every time you go to your browser, enter a URL, and hit enter, you're actually making a `GET` request.
 
@@ -81,14 +83,14 @@ Each route results in an **action**.
 
 REST can be translated in to RESTful Routes (routes that follow REST):
 
-| Method | Path          | Action                                                               |
-| ------ | ------------- | -------------------------------------------------------------------- |
-| GET    | `/engineers`   | Read information about all engineers                                 |
-| POST   | `/engineers`   | Create a new engineer                                                |
-| GET    | `/engineers/1` | Read information about the engineer whose ID is 1                    |
-| PUT    | `/engineers/1` | Update the existing engineer whose ID is 1 with all new content      |
-| PATCH  | `/engineers/1` | Update the existing engineer whose ID is 1 with partially new content|
-| DELETE | `/engineers/1` | Delete the existing engineer whose ID is 1                           |
+| Action | Method | Path           | Action                                                               |
+| ------ | ------ | -------------- | -------------------------------------------------------------------- |
+| index  | GET    | `/engineers`   | Read information about all engineers                                 |
+| create | POST   | `/engineers`   | Create a new engineer                                                |
+| show   | GET    | `/engineers/1` | Read information about the engineer whose ID is 1                    |
+| update | PUT    | `/engineers/1` | Update the existing engineer whose ID is 1 with all new content      |
+| update | PATCH  | `/engineers/1` | Update the existing engineer whose ID is 1 with partially new content|
+| destroy| DELETE | `/engineers/1` | Delete the existing engineer whose ID is 1                           |
 
 Note that the path doesn't contain any of the words describing the CRUD functionality that will be executed. That's the method's job.
 
@@ -97,48 +99,18 @@ These routes are important to keep in mind as we build out our controllers. For 
 ## Building an API in Express
 
 For this class, we'll be building an application called 'book-e' which can save
-bookmarks for us. We'll clone down the back-end for `book-e` and examine the a
-finished version of the codebase, which includes two related models. Then we'll
-build it out piece by piece, for the rest of the day.
-
-The goal is to use the finished codebase as our guideline, so if we ever get
-lost or stuck, we have something to reference.
+bookmarks for us. 
 
 ## Book-e
 
 ### Set Up Book-e Backend
 
-Clone down the
-[book-e-json](https://git.generalassemb.ly/sei-921/book-e-json) API
-and **FOLLOW THE SET-UP INSTRUCTIONS** in that readme.
-
 Download [Postman here](https://www.postman.com/downloads/) if you
 don't have it already. You'll need to create an account (free!) to use it.
 
-### Codebase Review (10 min)
+Postman is going to substitute for a front end for our testing purposes.
 
-Spend the next 10 minutes looking over the codebase in your breakout group. 
-There are lots of comments explaining stuff. Make sure you're on the `solution` 
-branch.
-
-Afterwards, we'll discuss each part of the starting codebase, using the
-commented annotations as our guide.
-
-Here are some things to think about while browing the codebase:
-
-- Look at the requires at the top of each file. How do they relate to each
-  other?
-- How do we connect to mongoDB?
-- Where are we defining the models? Where are they being used?
-- What is the router doing? Where are the routes defined?
-
-If you don't know what's going on in some area of the codebase, write down a
-question and we'll discuss it together.
-
-Make sure you switch back to the `master` branch before starting to code
-anything.
-
-## Setup express
+## Setup ExpressJS
 
 Before we can do anything, we need to actually make express work and listen for
 requests.
@@ -221,31 +193,28 @@ various types that aren't strings.
 
 ### Making our first route
 
-We have a bookmarks route, lets make it do something. Right now that method is
-empty.
+Let's create an **index** route to display all of the bookmarks in our database.  Remember the signature for the `get` method?  It looks like all of the [Express route methods](https://expressjs.com/en/guide/routing.html#route-methods).  We haven't seen the `next` parameter used yet, but we'll add it here for completeness:
 
-> In `controllers/bookmarks.js`...
 
 ```js
-router.get("/", (req, res) => {
-  res.send("<h1>Sup Multiverse?</h1>");
+// controllers/bookmarks.js
+
+// Index: GET all the bookmarks
+router.get("/", (req, res, next) => {
+  // 1. Get all of the bookmarks from the DB
+  // 2. Send them back to the client as JSON
+  // 3. If there's an error pass it on!
 });
 ```
 
-As expected, when you go to `http://localhost:8080/apis/bookmarks`, you see an
-`h1` element that contains 'Sup Multiverse?'.
+We've seen how we can send a response as HTML using a view engine with the `res.render()` method and we've used a couple of other [Express response methods](https://expressjs.com/en/guide/routing.html#response-methods) like `res.redirect()` and `res.send()`.  The key difference now is that we want to send the response as JSON.  
 
-Now, let's send a json response instead of plain html.
-
-```js
-router.get("/", (req, res) => {
-  res.json({ hello: "multiverse" });
-});
-```
 
 <details>
-  <summary>What do you see in the browser?</summary>
-  The browser renders a JSON object - the contents of which are the object we just defined.
+  <summary>Looking at the documentation method will we use to send back the data to the client?</summary>
+
+`res.json()` 
+
 </details>
 
 This is the basis for how we will send data from the database to the front end.
@@ -265,52 +234,61 @@ Next, let's fill out the routes for **reading** from the database.
 // import the bookmark model
 const Bookmark = require("../db/models/Bookmark");
 
+
+// Index: GET all the bookmarks
 router.get("/", (req, res) => {
-  // use the bookmark model to find all bookmarks
-  Bookmark.find({}).then(bookmarks => res.json(bookmarks));
+  // 1. Get all of the bookmarks from the DB
+  Bookmark.find({})
+    // 2. Send them back to the client as JSON
+    .then(bookmarks => res.json(bookmarks))
+    // 3. If there's an error pass it on!
+    .catch(next);
 });
 
 //...
 ```
 
-### We do: Get bookmark by title (20 min)
+### We do: Get bookmark by ID
 
-Using the same bookmark controller and model, we'll add a route for title.
+Using the same bookmark controller and model, we'll add a **show** route.
 
 First let's add the route and console log:
 
 ```js
-router.get("/:title", (req, res) => {
-  console.log("it works");
-  res.send("here is the title");
+// Show: Get a Bookmark by ID
+router.get("/:id", (req, res, next) => {
+  console.log(req.params)
 });
 ```
 
-What's up with this `:title` syntax though? This is how we tell express to
+What's the `:id` syntax? This is how we tell express to
 expect a **variable** to be passed in. In this case it's called a `param` and
 express will interpret it and give it to us in the request object, in another
 object called `params`.
 
 ```js
-router.get("/:title", (req, res) => {
-  console.log(req.params);
-  res.send("here is the title: " + req.params.title);
+// Show: Get a Bookmark by ID
+router.get("/:id", (req, res, next) => {
+  // 1. Find the Bookmark by its unique ID
+  // 2. Send it back to the client as JSON
+  // 3. If there's an error pass it on!
 });
+
 ```
 
-So if we visit `localhost:8080/api/bookmarks/reddit` then `req.params.title`
-will be equal to `reddit`.
-
-This isn't that useful right now though. We can use the param to look up a
-bookmark by title.
+How can we find an item in the database by it's id?  Do we have a pattern to use for this?
 
 ```js
-router.get("/:title", (req, res) => {
-  // use the model to look up a bookmark by title
-  Bookmark.find({ title: req.params.title }).then(bookmarks =>
-    res.json(bookmarks)
-  );
+// Show: Get a Bookmark by ID
+router.get("/:id", (req, res, next) => {
+  // 1. Find the Bookmark by its unique ID
+  Bookmark.findById(req.params.id)
+  // 2. Send it back to the client as JSON
+    .then((bookmark) => res.json(bookmark))  
+  // 3. If there's an error pass it on!
+    .catch(next);
 });
+
 ```
 
 ### GET requests with Postman
@@ -326,12 +304,10 @@ Ensure `mongod` and `nodemon` are running with no errors.
 
 You should see the response below, containing all the bookmarks!
 
-Also test the route `localhost:8080/api/bookmarks/reddit`. You should see a
+Also test the show route. You should see a
 single bookmark as the response.
 
 Now let's test these routes in the browser!
-
-> Note: In URLs, spaces are represented with `%20`.
 
 Make sure `nodemon` is running and you don't have any errors, and open the same
 two urls.
@@ -339,7 +315,6 @@ two urls.
 If we're just testing GET routes, we can use either Postman or the browser. But
 for anything more, we need to use postman, because its easier to send data.
 
-## Break (10 min)
 
 ### Creating Data + Body Parser
 
