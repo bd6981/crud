@@ -241,7 +241,7 @@ Next, let's fill out the routes for **reading** from the database.
 ```js
 //...
 // import the bookmark model
-const Bookmark = require("../db/models/Bookmark");
+const Bookmark = require("../models/Bookmark");
 
 
 // Index: GET all the bookmarks
