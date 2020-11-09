@@ -538,11 +538,11 @@ Bookmark.deleteMany({}).then(() => {
 
 Now we can see that the bookmarks all have an owner assigned to them.  We could use a second API call to get the details for the owner, but Mongoose makes it easy to add virtual data to our response object with the `.populate()` method. Change the index and show routes for the bookmarks as follows:
 
-```js
+```diff
 
 router.get('/', (req, res, next) => {
   Bookmark.find({})
-    .populate('owner')
++    .populate('owner')
     .then((bookmarks) => res.json(bookmarks))
     .catch(next);
 });
@@ -550,7 +550,7 @@ router.get('/', (req, res, next) => {
 router.get('/:id', (req, res, next) => {
   Bookmark
     .findById(req.params.id)
-    .populate('owner')
++    .populate('owner')
     .then((bookmark) => res.json(bookmark))
     .catch(next);
 });
