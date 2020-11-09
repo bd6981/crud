@@ -118,44 +118,23 @@ requests.
 In your `index.js` file add this below the requires:
 
 ```js
+const express = require('express')
 // instantiate express
 const app = express();
+
+/* START CONTROLLERS HERE */
+
+/* END CONTROLLERS HERE */
+
+app.set('port', process.env.PORT || 8000);
+
+app.listen(app.get('port'), () => {
+  console.log(`✅ PORT: ${app.get('port')} 🌟`);
+});
 ```
 
 This is great! Now our server should run with `nodemon`. But it doesn't do
 anything yet.
-
-Let's tell express to listen for requests on a couple routes. Add the following
-code:
-
-```js
-// at the top
-const bookmarksController = require("./controllers/bookmarks");
-const usersController = require("./controllers/users");
-
-// ... below express()
-
-app.use("/api/bookmarks/", bookmarksController);
-app.use("/api/users/", usersController);
-```
-
-Great!
-
-> What do we have to do to get these routes to actually run? Make a request to
-> them!
-
-Looking at the two paths we just defined, and the only route in the
-`bookmarksController`, what's the url that we have to make a request to, to
-trigger that method to run?
-
-<details>
-<summary>
-	Answer
-</summary>
-
-`http://localhost:8080/api/bookmarks`
-
-</details>
 
 ### Build our models
 
@@ -190,6 +169,36 @@ properties. We'll add the relation between them later:
 Check out the
 [mongoose schematypes](https://mongoosejs.com/docs/schematypes.html) for all the
 various types that aren't strings.
+
+### Seed the database
+
+Create a `seeds.json` and `seeds.js` file inside the db directory.  For now, let's just create a seed file for the Bookmarks.
+
+```json
+[
+  {
+     "title": "Microsoft",
+     "url": "https://microsoft.com",
+  },
+  {
+     "title": "reddit",
+     "url": "https://reddit.com",  
+  },
+  {
+     "title": "Google",
+     "url": "https://google.com",
+  },
+  {
+     "title": "Know your meme",
+     "url": "https://knowyourmeme.com/",
+  },
+  {
+     "title": "Hacker news",
+     "url": "https://news.ycombinator.com"
+  }
+]
+
+```
 
 ### Making our first route
 
@@ -248,6 +257,20 @@ router.get("/", (req, res) => {
 //...
 ```
 
+To test things out, we'll need to import the bookmarks controller and then use it:
+
+```js
+/* START CONTROLLERS HERE */
+
+const bookmarksController = require('./controllers/bookmarks');
+app.use('/api/bookmarks/', bookmarksController);
+
+/* END CONTROLLERS HERE */
+```
+
+The `app.use('/api/bookmarks/', bookmarksController)` method here takes two arguments.  It lets us define the base path
+for all requests that will be sent to the bookmark controller.  This means that we won't be using the `/api/bookmarks` inside our controller. 
+
 ### We do: Get bookmark by ID
 
 Using the same bookmark controller and model, we'll add a **show** route.
@@ -298,7 +321,7 @@ one).
 
 Ensure `mongod` and `nodemon` are running with no errors.
 
-- Enter `localhost:8080/api/bookmarks/` in the address bar
+- Enter `localhost:8000/api/bookmarks/` in the address bar
 - Ensure the dropdown says `GET`
 - Click `Send`
 
@@ -323,19 +346,14 @@ for anything more, we need to use postman, because its easier to send data.
 There are a bunch of different methods we can use to retrieve data, but there's
 really only one used to create new data: `.create()`
 
-If you look at the `seed.js` file, you can see the model in action.
-
-Let's set up a route in our bookmarks controller to listen for POST requests.
-This is the convention we usually use to create data.
-
 ```js
 router.post("/", (req, res) => {
-  let newBookmark = req.body;
-  // option 1
-  // console log the request body
-  console.log(newBookmark);
-  // and send the request back just as we received it
-  res.json(newBookmark);
+  // 1. Use the data in the req body to create a new bookmark
+  Bookmark.create(req.body)
+    // 2. If the create is successful, send back the record that was inserted
+    .then(bookmark => res.json(bookmark))
+    // 3. If there was an error, pass it on!
+    .catch(next)
 });
 ```
 
@@ -356,18 +374,16 @@ const express = require('express')
 const app = express()
 const bookmarksController = require('./controllers/bookmarks')
 
-// add `express.json` middleware which will parse JSON requests into
-// JS objects before they reach the route files.
-// The method `.use` sets up middleware for the Express application
+// Use middleware to parse the data in the HTTP request body and add
+// a property of body to the request object containing a POJO with with data.
 app.use(express.json())
-
-// this parses requests that may use a different content type
 app.use(express.urlencoded({ extended: true }));
 
-app.use('/api/bookmarks/', bookmarksController)
-
-app.listen(8080, () => console.log(`They see me rollin...on port 8080...`))
+/* START CONTROLLERS HERE */
+...
 ```
+
+**Remember this middleware must go before our controllers run.**
 
 Once we have the route defined and JSON parsing enabled, we can send some POST
 requests using postman.
@@ -398,17 +414,6 @@ What is the response that we get back?
 Check your console (wherever nodemon is running) and you'll hopefully see some
 output. Postman will also show the response from the server.
 
-Now, instead of just console logging this, use the model to actually create a
-record based on the data sent in the POST request.
-
-```js
-router.post("/", (req, res) => {
-  let newBookmark = req.body;
-
-  Bookmark.create(req.body).then(bookmark => res.json(bookmark));
-});
-```
-
 ### You do: Updating Data (15 min)
 
 > The U in CRUD
@@ -419,15 +424,15 @@ basically doing both.
 Combining the `params` and the `req.body` that we've used in the GET and POST
 methods, try the following:
 
-- create a new PUT route at `/api/bookmarks/:title`
+- create a new PUT route at `/api/bookmarks/:id`
 - use the parameter to search for a record (see below)
 - use req.body to pass in the data to the model
 
 You'll use the model method `findOneAndUpdate()` which takes three arguments:
 
-- the query to find a record to be updated (same as `find({})` uses)
-- the new data to update the old record (an object)
-- an additional option so Mongoose returns the updated document (the default is
+1. the query to find a record to be updated (same as `find({})` uses)
+2. the new data to update the old record (an object)
+3. an additional option so Mongoose returns the updated document (the default is
   the original document). You can read more about the possible options
   [here](https://mongoosejs.com/docs/api.html#model_Model.findOneAndUpdate), and
   this does not have to be anything more `{ new: true }` as the third argument
@@ -444,7 +449,7 @@ dropdown.
 Deleting follows a similar pattern, this time we just need to delete based on
 one value. We'll use title again.
 
-- create a new DELETE route at `/api/bookmarks/:title`
+- create a new DELETE route at `/api/bookmarks/:id`
 - use req.params to search for a record to delete
 - use `findOneAndDelete()` to delete a record by its title
 
@@ -458,49 +463,22 @@ So far we've built out CRUD on one model. But in a lot of cases, we have more
 than one, and they relate to each other. We want to be able to query them both
 as they relate.
 
-We'll start by adding relations to both our user and bookmark models.
-
-```js
-const UserSchema = mongoose.Schema({
-  email: String,
-  name: String,
-  favorites: [
-    {
-      ref: "Bookmark",
-      type: mongoose.Schema.Types.ObjectId
-    }
-  ]
-});
-```
+We'll start by adding relations to the bookmark models.
 
 ```js
 const BookmarkSchema = new mongoose.Schema({
   title: String,
   url: String,
-  favorited: [
-    {
-      ref: "User",
-      type: mongoose.Schema.Types.ObjectId
-    }
-  ]
+  owner: {
+    // References use the type ObjectId
+    type: mongoose.Schema.Types.ObjectId,
+    // the name of the model to which they refer
+    ref: 'User'
+  } 
 });
 ```
 
-The key is the name of the property. In this case, they point to each other. The
-value is an array of references, with a type called `ObjectId` - these are a
-`Type` that is specific to mongoose. They may look like strings, but they are
-their own ObjectId type, which is why we define them this way.
-
-So if we query a user that has several `favorites`, it will look like an array
-of IDs. Those IDs belong to specific bookmarks. Vice versa for querying
-bookmarks, we'll see IDs that belong to users.
-
-We don't have to do it this way - we could have a one-way relation. But for this
-example, we go both directions.
-
-> How is this different from just embedding one schema inside another?
-
-### You do: GET Users
+### You do: Index Route: GET Users
 
 Using what we covered earlier, build out the route to GET all users.
 
@@ -510,11 +488,11 @@ Using what we covered earlier, build out the route to GET all users.
 
 > 5 min review
 
-### You do: GET one user by email address
+### You do: Show Route: GET one user
 
-Add a new route that gets a single user by email address.
+Add a new route that gets a single user by id.
 
-- use the route params, calling it `:email`
+- use the route params, calling it `:id`
 - use `findOne()` instead of `find()`
 - send a json response
 - test your work using Postman
@@ -529,150 +507,16 @@ body and pass it directly into `create()`
 
 ```js
 router.post("/", (req, res) => {
-  let newUser = req.body;
-  User.create(newUser).then(created => {
-    res.json(created);
+  User.create(req.body).then(user => {
+    res.json(user);
   });
 });
 ```
 
-This is fine and all, now we can create new users. But what if we want to create
-new users that also have favorite bookmarks, all in one step?
+## Using Population
 
-### We do: Create a user with favorited bookmarks
 
-First let's add a new route.
 
-```js
-router.post("/new", (req, res) => {});
-```
-
-Since we're touching both models, we need to make sure we have both `User` and
-`Bookmark` required at the top.
-
-```js
-const User = require("../db/models/User");
-const Bookmark = require("../db/models/Bookmark");
-```
-
-In our controller method we need to use both at the same time. We can do this by
-nesting our creates inside of the `.then()` promises.
-
-Also, because anything we pass in the request body gets parsed into a single
-object and stored in `req.body`, we need to make sure we pass all the
-information we need in a single object.
-
-Here's an example of what that might look like:
-
-```json
-{
-  "user": {
-    "name": "test relation",
-    "email": "test@email.com"
-  },
-  "bookmark": {
-    "title": "test",
-    "url": "http://test.com"
-  }
-}
-```
-
-So we can access the `user` object above in `req.body.user` and the `bookmark`
-object in `req.body.bookmark`. Perfect!
-
-Add the create methods, one inside of the other. We have to do this because
-create is asynchronous, and we want to guarantee that they run in this specific
-order.
-
-```js
-router.post("/new", (req, res) => {
-  User.create(req.body.user).then(newUser => {
-    Bookmark.create(req.body.bookmark).then(newBookmark => {});
-  });
-});
-```
-
-Then inside of the `then()` for bookmark's create, we'll link the two records
-using their ids. We can push the ids directly into the arrays using `.push()`
-
-```js
-router.post("/new", (req, res) => {
-  User.create(req.body.user).then(newUser => {
-    Bookmark.create(req.body.bookmark).then(newBookmark => {
-      newUser.favorites.push(newBookmark._id);
-      newBookmark.favorited.push(newUser._id);
-
-      newUser.save();
-      newBookmark.save();
-
-      res.json(newUser);
-    });
-  });
-});
-```
-
-What's happening here?
-
-- We're creating a user using the model method `.create()`
-- Then we're creating a bookmark using the same method
-- newUser, newBookmark are the newly created user objects
-- We push the respective id of the newly created documents into each others
-  associated arrays
-- If we don't run `save()` the push will never be persisted and the relation
-  will be empty
-- Finally, we send back the entire document as json
-
-There's a lot going on here! But it's really just us combining the two previous
-ideas.
-
-### You do: Favorite a bookmark
-
-See if you can add a route that adds a bookmark to a user's favorites.
-
-This is going to be very similar to the previous exercise!
-
-- You'll need two params, one for the user and one for the bookmark. I prefer
-  ID, but you can use any way to query them
-- use `findOneAndUpdate()` for the user
-- push each id into each others favorite properties
-- save both
-- send a json response of the user object
-- test with postman!
-
-<details>
-<summary>Solution</summary>
-
-```js
-router.put("/:id/:bookmarkId", (req, res) => {
-  let userID = req.params.id;
-  let bookmarkID = req.params.bookmarkId;
-
-  // find the bookmark by its id
-  Bookmark.findById(bookmarkID).then(mark => {
-    // find the user by its id
-    // could also swap this out with email
-    User.findOneAndUpdate({ _id: userID }).then(user => {
-      // push each id into the others array
-      user.favorites.push(mark._id);
-      mark.favorited.push(user._id);
-      // save both
-      user.save();
-      mark.save();
-
-      // send json response
-      res.json(user);
-    });
-  });
-});
-```
-
-</details>
-
-## Finishing
-
-The UPDATE and DELETE methods follow the same pattern for User as they do for
-Bookmark, which we did earlier. See if you can look at the solution code for
-Bookmark and implement them in the User controller.
 
 ### Redirects
 
