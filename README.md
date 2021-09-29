@@ -703,19 +703,15 @@ Now we can see that the bookmarks all have an owner assigned to them. We could u
 
 ```diff
 
-router.get('/', (req, res, next) => {
-  Bookmark.find({})
-+    .populate('owner')
-    .then((bookmarks) => res.json(bookmarks))
-    .catch(next);
+router.get('/', async (req, res, next) => {
++     const bookmarks = await Bookmark.find({}).populate('owner')
+...
 });
 
 router.get('/:id', (req, res, next) => {
-  Bookmark
-    .findById(req.params.id)
-+    .populate('owner')
-    .then((bookmark) => res.json(bookmark))
-    .catch(next);
++	const bookmark = await Bookmark.findById(req.params.id).populate('owner');
+
+...
 });
 ```
 
