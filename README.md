@@ -298,7 +298,7 @@ Create a `seeds.json` and `seeds.js` file inside the `db` directory. For now, le
 ]
 ```
 
-We won't seed our database programmitcally just yet -- we'll do so in a little bit! For now, let's head to to our MongoDB Atlas cluster and manually add in some Bookmarks data just so that we have data to play around with.
+We won't seed our database programmatically just yet -- we'll do so in a little bit! For now, let's head to to our MongoDB Atlas cluster and manually add in some Bookmarks data just so that we have data to play around with.
 
 See commit [here](https://git.generalassemb.ly/esin87/express-book-e-demo/commit/06727fd596a89aa956b0c360057848ca6dab6e14).
 
