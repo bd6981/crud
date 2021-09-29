@@ -166,8 +166,23 @@ app.listen(app.get('port'), () => {
 });
 ```
 
-This is great! Now our server should run with `nodemon`. But it doesn't do
-anything yet. We need to write some logic for what our application needs to do!
+## Redirects
+
+Since all of our routes will be defined on `/api/something`, we sometimes want a more user-friendly way to point people in the right direction. Enter the redirect.
+
+We'll define a route for the base url (`/`), and have it redirect the user to `/api/bookmarks`.
+
+In your index.js file, above the controllers section for the API routes, we have:
+
+```js
+app.get('/', (req, res) => {
+	res.redirect('/api/bookmarks');
+});
+```
+
+What we're really doing here is sending back a response that is a redirect, rather than HTML or JSON. The browser knows how to handle this, so once it receives the redirect response it automatically follows it to the new path. This new path is treated as a new request, so the browser then performs a GET request to the bookmarks url.
+
+This is great! Now our server should run with `nodemon`. But it doesn't do anything yet. We need to write some logic for what our server-side application needs to do in response to requests!
 
 See commit [here](https://git.generalassemb.ly/esin87/express-book-e-demo/commit/cff116d3354716a4490f58b3f6e60610889fb956).
 
@@ -535,15 +550,16 @@ You'll use the model method `findOneAndUpdate()` which takes three arguments:
 2. the new data to update the old record (an object)
 3. an additional option so Mongoose returns the updated document (the default is
    the original document). You can read more about the possible options
-   [here](https://mongoosejs.com/docs/api.html#model_Model.findOneAndUpdate), and
+   [here](https://mongoosejs.com/docs/api.html#model_Model.findByIdAndUpdate), and
    this does not have to be anything more `{ new: true }` as the third argument
 
 What HTTP verbs should you use for each? What routes should they go on?
 
-Test your code using Postman. Make sure you set the method to PUT on the
-dropdown.
+Test your code using Postman. Make sure you set the method to PUT on the dropdown.
 
 > 5 min review
+
+See commit [here](https://git.generalassemb.ly/esin87/express-book-e-demo/commit/8427468d77c093d7516ac40c04e8afc70c06d94d)
 
 ### You do: Delete a record
 
@@ -551,22 +567,25 @@ Deleting follows a similar pattern, this time we just need to delete based on
 one value. We'll use title again.
 
 - create a new DELETE route at `/api/bookmarks/:id`
-- use req.params to search for a record to delete
-- use `findOneAndDelete()` to delete a record by its title
+- use req.params.id to search for a record to delete
+- use [`findByIdAndDelete()`](https://mongoosejs.com/docs/api.html#model_Model.findByIdAndDelete) to delete a record by its id
+
+Test your code using Postman. Make sure you set the method to DELETE on the dropdown.
 
 > 5 min review
+
+See commit [here](https://git.generalassemb.ly/esin87/express-book-e-demo/commit/f90a589b3b4c3fccaa81996683564646ff650159)
 
 ## Second half
 
 ### CRUD with two related models
 
-So far we've built out CRUD on one model. But in a lot of cases, we have more
-than one, and they relate to each other. We want to be able to query them both
-as they relate.
+So far we've built out CRUD on one model. But in a lot of cases, we have more than one, and they relate to each other. We want to be able to query them both as they relate to each other.
 
-We'll start by adding relations to the bookmark models.
+We'll start by adding relations to the Bookmark models. There are two main ways we can express relationships in Express APIs -- with a reference, as we're seeing here, or with subdocuments. Next week you'll have the option to learn more about the latter, but for now let's focus on creating a reference to another model.
 
 ```js
+// models/Bookmark.js
 const BookmarkSchema = new mongoose.Schema({
 	title: String,
 	url: String,
@@ -579,9 +598,30 @@ const BookmarkSchema = new mongoose.Schema({
 });
 ```
 
+See commit [here](https://git.generalassemb.ly/esin87/express-book-e-demo/commit/a7f86321a8b060b7d0b4ef461fbf48a5f7392af1).
+
 ### You do: Index Route: GET Users
 
-Using what we covered earlier, build out the route to GET all users.
+Go to your MongoDB Atlas interface, create a `users` collection and manually insert some users into your `booke` database under the users collection.
+
+```json
+[
+	{
+		"name": "Esin Saribudak",
+		"email": "esin@cats.com"
+	},
+	{
+		"name": "Carlos Godoy",
+		"email": "carlos@crypto.com"
+	},
+	{
+		"name": "Shaw Kitajima",
+		"email": "shaw@running.com"
+	}
+]
+```
+
+Using what we covered earlier, build out the route to GET all users in `controllers/usersController.js`. Add your `usersController` to `index.js` so that your users routes are exposed to the client.
 
 - use `find()`
 - send a json response
@@ -589,36 +629,44 @@ Using what we covered earlier, build out the route to GET all users.
 
 > 5 min review
 
+See commit [here](https://git.generalassemb.ly/esin87/express-book-e-demo/commit/1dab4999c926fbb4155b8247b23851ee896670ea).
+
 ### You do: Show Route: GET one user
 
 Add a new route that gets a single user by id.
 
 - use the route params, calling it `:id`
-- use `findOne()` instead of `find()`
+- use `findById()` instead of `find()`
 - send a json response
 - test your work using Postman
+- stretch: send back a 404 if user not found
+
+See commit [here](https://git.generalassemb.ly/esin87/express-book-e-demo/commit/bc064ada4b2ef589d9c7d431ca28d715dc836bf8).
 
 ### We do: Create a user
 
-Now that we can query users, lets make a route to create a new user. For now, we
-won't add any relations - just creating a single user without favorites.
+Now that we can query users, lets make a route to create a new user. For now, we won't add any relations - just creating a single user without favorites.
 
-This pattern should look familiar. We take the parsed object from the request
-body and pass it directly into `create()`
+This pattern should look familiar. We take the parsed object from the request body and pass it directly into `create()`.
 
 ```js
-router.post('/', (req, res, next) => {
-	User.create(req.body)
-		.then((user) => {
-			res.json(user);
-		})
-		.catch(next);
+router.post('/', async (req, res, next) => {
+	try {
+		const newUser = await User.create(req.body);
+		res.status(201).json(newUser);
+	} catch (err) {
+		next(err);
+	}
 });
 ```
 
+Test out your route in Postman!
+
+See commit [here](https://git.generalassemb.ly/esin87/express-book-e-demo/commit/3feb2cae61cee553e372b1f5f50a3e1e399a26e5)
+
 ## Using Population
 
-Let's change up our seeds.js file so that we can quickly delete everything in the database and add a new user as our owner of a bunch of bookmarks:
+Let's change up our `db/seeds.js` file so that we can quickly delete everything in the database and add a new user as our owner of a bunch of bookmarks:
 
 ```js
 const mongoose = require('./connection');
@@ -643,6 +691,14 @@ Bookmark.deleteMany({})
 	});
 ```
 
+Quit your server. Run your `seeds.js` file with the following code.
+
+```cli
+$ node db/seeds.js
+```
+
+You should see the seed data log!
+
 Now we can see that the bookmarks all have an owner assigned to them. We could use a second API call to get the details for the owner, but Mongoose makes it easy to add virtual data to our response object with the `.populate()` method. Change the index and show routes for the bookmarks as follows:
 
 ```diff
@@ -665,48 +721,26 @@ router.get('/:id', (req, res, next) => {
 
 Test the results in the browser or Postman!!!
 
-## Redirects
-
-Since all of our routes are defined on `/api/something`, we sometimes want a
-more user-friendly way to point people in the right direction. Enter the
-redirect.
-
-We'll define a route for the base url (`/`), and have it redirect the user to
-`/api/bookmarks`.
-
-In your index.js file, above the definitions for the API routes:
-
-```js
-app.get('/', (req, res) => {
-	res.redirect('/api/bookmarks');
-});
-```
-
-What we're really doing here is sending back a response that is a redirect,
-rather than HTML or JSON. The browser knows how to handle this, so once it
-receives the redirect response it automatically follows it to the new path. This
-new path is treated as a new request, so the browser then performs a GET request
-to the bookmarks url.
-
 ## CORS
 
-Sometimes we need we'll need to add the `cors` dependency. CORS stands for cross
-origin resource sharing. Express is enforcing a CORS policy that cross-origin
-requests without proper configuration on the back end.
+Sometimes we need we'll need to add the `cors` dependency. CORS stands for cross origin resource sharing. Express is enforcing a CORS policy that cross-origin requests without proper configuration on the back end.
 
-You can think of origins as website domains, like `localhost:3000`,
-`localhost:8080`, `google.com`, `fuzzy-panda-cat.herokuapp.com`, and so on.
+You can think of origins as website domains, like `localhost:3000`, `localhost:8080`, `google.com`, `fuzzy-panda-cat.herokuapp.com`, and so on.
 
-Because our server runs on `localhost:8080`, any requests that come from
-somewhere that is NOT `localhost:8080` will be blocked, by default. So if we had
-a website that made `fetch()` requests to `localhost:8080`, they would be
-blocked unless we configure cors in express.
+Because our server runs on `localhost:8000`, any requests that come from somewhere that is NOT `localhost:8000` will be blocked, by default. So if we had a website that made `fetch()` requests to `localhost:8000`, they would be blocked unless we configure cors in express.
 
-The npm package `cors` is middleware that tells express to accept requests from
-different origins. By default it just enables ALL origins.
+The npm package `cors` is middleware that tells express to accept requests from different origins. By default it just enables ALL origins.
 
 > [Here's a good article](https://developer.mozilla.org/en-US/docs/Web/HTTP/CORS)
 > on MDN about what CORS is.
+
+First install cors to your application:
+
+```cli
+$ npm i cors
+```
+
+Then configure it in `index.js`:
 
 ```diff
 const express = require('express')
@@ -714,16 +748,18 @@ const express = require('express')
 
 const app = express()
 
+// in middleware
 +app.use(cors())
-
-
+...
 ```
 
 </details>
 
+See commit [here](https://git.generalassemb.ly/esin87/express-book-e-demo/commit/9b37a7a100309ad3cdd7c1d43eb0022aceac48ec).
+
 ## Handling Errors
 
-We've been using the `next` parameter in our controllers to pass our errors onto the _"next"_ piece of middleware in our application. At this point we don't have anything to do the job of handling the errors though, so let's add something to do that. Inside the `index.js` add the following code **right after the comment ending the controllers**:
+We've been using the `next` parameter in our controllers to pass our errors onto the _"next"_ piece of middleware in our application. We manually wrote additional code in our route handlers to check for errors, but this was repetitive. At this point we don't have anything to do the job of handling the errors that we've been passing to `next`, so let's add something to do that. Inside the `index.js` add the following code **right after the comment ending the controllers**:
 
 ```js
 ...
@@ -738,10 +774,12 @@ app.use((err, req, res, next) => {
 
 Because we need to send an error back to the client if something goes wrong, we're going to check the errors that get passed through this middleware for a status code and a message, if none exists, we'll just use a generic 500 Internal Server Error. The `res.status()` method allows us to set the status on an outgoing response, but it won't actually send the response. We'll use the `send()` method to handle sending the response and give it the message stored in our variable.
 
+See commit [here](https://git.generalassemb.ly/esin87/express-book-e-demo/commit/b8627174ccdb04d2575f9c75fb59ad9fe1b95905).
+
 ## Additional Resources
 
 - Express docs http://expressjs.com/en/4x/api.html
-- mongoose.js docs https://mongoosejs.com/docs/guide.html
+- Mongoose.js docs https://mongoosejs.com/docs/guide.html
 
 ## [License](LICENSE)
 
