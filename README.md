@@ -33,9 +33,9 @@ today, but rather build a single service that implements an API over HTTP.
 
 ### REST
 
-**REST**, or REpresentational State Transfer, is a convention that standardizes how clients make requests to servers.
+**REST**, or **RE**presentational **S**tate **T**ransfer, is a convention that standardizes how clients make requests to servers.
 
-Knowing REST is important because the vast majority of web developers have agreed to follow this same convention.
+Knowing REST is important because the vast majority of web developers have agreed to follow this same convention. (SOAP is an alternative, less common paradigm for APIs.)
 
 The web as we know it transfers data via HTTP, or Hyper-Text Transfer Protocol, which is a common convention used for **REST**. HTTP specifies that a server receives a **request** from a client and then delivers a corresponding **response**.
 
@@ -83,14 +83,14 @@ Each route results in an **action**.
 
 REST can be translated in to RESTful Routes (routes that follow REST):
 
-| Action | Method | Path           | Action                                                               |
-| ------ | ------ | -------------- | -------------------------------------------------------------------- |
-| index  | GET    | `/engineers`   | Read information about all engineers                                 |
-| create | POST   | `/engineers`   | Create a new engineer                                                |
-| show   | GET    | `/engineers/1` | Read information about the engineer whose ID is 1                    |
-| update | PUT    | `/engineers/1` | Update the existing engineer whose ID is 1 with all new content      |
-| update | PATCH  | `/engineers/1` | Update the existing engineer whose ID is 1 with partially new content|
-| destroy| DELETE | `/engineers/1` | Delete the existing engineer whose ID is 1                           |
+| Action  | Method | Path           | Action                                                                |
+| ------- | ------ | -------------- | --------------------------------------------------------------------- |
+| index   | GET    | `/engineers`   | Read information about all engineers                                  |
+| create  | POST   | `/engineers`   | Create a new engineer                                                 |
+| show    | GET    | `/engineers/1` | Read information about the engineer whose ID is 1                     |
+| update  | PUT    | `/engineers/1` | Update the existing engineer whose ID is 1 with all new content       |
+| update  | PATCH  | `/engineers/1` | Update the existing engineer whose ID is 1 with partially new content |
+| destroy | DELETE | `/engineers/1` | Delete the existing engineer whose ID is 1                            |
 
 Note that the path doesn't contain any of the words describing the CRUD functionality that will be executed. That's the method's job.
 
@@ -99,26 +99,37 @@ These routes are important to keep in mind as we build out our controllers. For 
 ## Building an API in Express
 
 For this class, we'll be building an application called 'book-e' which can save
-bookmarks for us. 
+bookmarks for us.
 
 ## Book-e
 
 ### Set Up Book-e Backend
 
 Download [Postman here](https://www.postman.com/downloads/) if you
-don't have it already. You'll need to create an account (free!) to use it.
+don't have it already. Be sure to download the desktop application.
 
-Postman is going to substitute for a front end for our testing purposes.
+Postman is going to substitute for a front end for our testing purposes, so that we can make `POST`, `PUT/PATCH`, AND `DELETE` requests without a user interface. Our browser URL bars make `GET` requests by default.
 
 ## Setup ExpressJS
 
-Before we can do anything, we need to actually make express work and listen for
+Before we can do anything, we need to actually make Express work and listen for
 requests.
 
-In your `index.js` file add this below the requires:
+### Instructions
+
+1. Navigate into your sandbox and create a new directory called `express-book-e`.
+1. Initialize your repo as a Node app and Git repo by running `npm init -y` and `git init`.
+1. Install our required dependencies: `npm i express mongoose dotenv`.
+1. Add a `.gitignore` and write to it by running:
+
+```cli
+$ echo -e "node_modules \n .env" > .gitignore
+```
+
+In your `index.js` file add this:
 
 ```js
-const express = require('express')
+const express = require('express');
 // instantiate express
 const app = express();
 
@@ -129,32 +140,81 @@ const app = express();
 app.set('port', process.env.PORT || 8000);
 
 app.listen(app.get('port'), () => {
-  console.log(`✅ PORT: ${app.get('port')} 🌟`);
+	console.log(`✅ PORT: ${app.get('port')} 🌟`);
 });
 ```
 
 This is great! Now our server should run with `nodemon`. But it doesn't do
-anything yet.
+anything yet. We need to write some logic for what our application needs to do!
+
+### Database Connection
+
+In your `.env` file, create a variable called `DATABASE_URL` and set it equal to your connection string from the MongoDB lecture.
+
+Give the database a meaningful name, like `booke`.
+
+```
+DATABASE_URL=mongodb+srv://db-user:Xa0I45XL14LQX3Tn@cluster0.yshuq.mongodb.net/booke?retryWrites=true&w=majority
+```
+
+Create a folder called `db`, short for databases, and inside of it create a `connection.js`. This is where we'll set up the code to connect to our remote MongoDB Atlas instance.
+
+```js
+// db/connection.js
+//=============================================================================
+// Mongo Atlas Connection
+//=============================================================================
+require('dotenv').config();
+const mongoose = require('mongoose');
+
+// Mongo URL and Connection
+const mongoURI = process.env.DATABASE_URL;
+const db = mongoose.connection;
+
+// Connect to Mongo
+mongoose.connect(mongoURI, {
+	useNewUrlParser: true,
+	useUnifiedTopology: true,
+	useCreateIndex: true,
+});
+
+// Connection Error/Success - optional but can be helpful
+// Define callback functions for various events
+db.on('error', (err) => console.log(err.message + ' is Mongod not running?'));
+db.on('connected', () => console.log('mongo connected at: ', mongoURI));
+db.on('disconnected', () => console.log('mongo disconnected'));
+
+// Open the Connection
+db.on('open', () => {
+	console.log('✅ mongo connection made!');
+});
+
+// now, our mongoose instance has a configured connection to our local db, in addition
+// to its model configuration and can be exported to other files
+module.exports = mongoose;
+```
 
 ### Build our models
 
-Currently we have two files where models should be. Lets build them out before
-we attempt to use them.
+Create a folder in your repo called `models`.
 
-Here's an example for the Bookmark model, let's just talk through this.
+We have two models for our Book-E application -- a bookmark and a user. Let's build them out before we attempt to use them.
+
+Here's an example for the Bookmark model -- let's talk through this!
 
 ```js
+// models/Bookmark.js
 // require the mongoose package from the connection pool
-const mongoose = require("../connection");
+const mongoose = require('../connection');
 
 // make a new schema with 2 properties, and assign it to a variable
 const BookmarkSchema = new mongoose.Schema({
-  title: String,
-  url: String
+	title: String,
+	url: String,
 });
 
 // instantiate the model, calling it "Bookmark" and with the schema we just made
-const Bookmark = mongoose.model("Bookmark", BookmarkSchema);
+const Bookmark = mongoose.model('Bookmark', BookmarkSchema);
 
 // export the newly created model
 module.exports = Bookmark;
@@ -172,57 +232,49 @@ various types that aren't strings.
 
 ### Seed the database
 
-Create a `seeds.json` and `seeds.js` file inside the db directory.  For now, let's just create a seed file for the Bookmarks.
+Create a `seeds.json` and `seeds.js` file inside the db directory. For now, let's just create a seed file for the Bookmarks. This is a common approach when we want to populate our application with data for development purposes.
 
 ```json
 [
-  {
-     "title": "Microsoft",
-     "url": "https://microsoft.com",
-  },
-  {
-     "title": "reddit",
-     "url": "https://reddit.com",  
-  },
-  {
-     "title": "Google",
-     "url": "https://google.com",
-  },
-  {
-     "title": "Know your meme",
-     "url": "https://knowyourmeme.com/",
-  },
-  {
-     "title": "Hacker news",
-     "url": "https://news.ycombinator.com"
-  }
+	{
+		"title": "Microsoft",
+		"url": "https://microsoft.com"
+	},
+	{
+		"title": "reddit",
+		"url": "https://reddit.com"
+	},
+	{
+		"title": "Google",
+		"url": "https://google.com"
+	},
+	{
+		"title": "Know your meme",
+		"url": "https://knowyourmeme.com/"
+	},
+	{
+		"title": "Hacker news",
+		"url": "https://news.ycombinator.com"
+	}
 ]
-
 ```
 
 ### Making our first route
 
-Let's create an **index** route to display all of the bookmarks in our database.  Remember the signature for the `get` method?  It looks like all of the [Express route methods](https://expressjs.com/en/guide/routing.html#route-methods).  We haven't seen the `next` parameter used yet, but we'll add it here for completeness:
-
+Let's create an **index** route to display all of the bookmarks in our database. Remember the signature for the `get` method? It looks like all of the [Express route methods](https://expressjs.com/en/guide/routing.html#route-methods). We haven't seen the `next` parameter used yet, but we'll add it here for completeness:
 
 ```js
 // controllers/bookmarks.js
 
 // Index: GET all the bookmarks
-router.get("/", (req, res, next) => {
-  // 1. Get all of the bookmarks from the DB
-  // 2. Send them back to the client as JSON
-  // 3. If there's an error pass it on!
+router.get('/', (req, res, next) => {
+	// 1. Get all of the bookmarks from the DB
+	// 2. Send them back to the client as JSON
+	// 3. If there's an error pass it on!
 });
 ```
 
-We've seen how we can send a response as HTML using a view engine with the `res.render()` method and we've used a couple of other [Express response methods](https://expressjs.com/en/guide/routing.html#response-methods) like `res.redirect()` and `res.send()`.  The key difference now is that we want to send the response as JSON.  
-
-
-<details>
-  <summary>Looking at the documentation method will we use to send back the data to the client?</summary>
-
-`res.json()` 
+We've seen how we can send a response using [Express response methods](https://expressjs.com/en/guide/routing.html#response-methods) like `res.sendStatus()` and `res.send()`. Now we want to explicitly send the response as JSON, so we'll use `res.json()`.
 
 </details>
 
@@ -232,6 +284,8 @@ This is the basis for how we will send data from the database to the front end.
 
 > The R in CRUD
 
+Create a folder called `controllers` in your application. In your `controllers` folder, create a file called `bookmarksController.js`.
+
 Our controller is really intended to serve data from database, which means we
 need to query the database. To this end, we will use the model which defined
 using mongoose.
@@ -239,37 +293,60 @@ using mongoose.
 Next, let's fill out the routes for **reading** from the database.
 
 ```js
-//...
+//controllers/bookmarksController.js
+const express = require('express');
+const router = express.Router();
 // import the bookmark model
-const Bookmark = require("../models/Bookmark");
-
+const Bookmark = require('../models/Bookmark');
 
 // Index: GET all the bookmarks
-router.get("/", (req, res, next) => {
-  // 1. Get all of the bookmarks from the DB
-  Bookmark.find({})
-    // 2. Send them back to the client as JSON
-    .then(bookmarks => res.json(bookmarks))
-    // 3. If there's an error pass it on!
-    .catch(next);
+router.get('/', (req, res, next) => {
+	// 1. Get all of the bookmarks from the DB
+	Bookmark.find({})
+		// 2. Send them back to the client as JSON
+		.then((bookmarks) => res.json(bookmarks))
+		// 3. If there's an error pass it on!
+		.catch(next);
 });
 
-//...
+// Export this router object so that it is accessible when we require the file elsewhere
+module.exports = router;
 ```
+
+Note: This syntax follows the Promise chaining that we've seen throughout Units 1 and 2. Now that we know how to use `async/await` and `try/catch` syntax, how might we refactor our code to be more modern and avoid callback hell?
+
+<details><summary>Solution</summary>
+
+```js
+// Index: GET all the bookmarks
+router.get('/', async (req, res, next) => {
+	try {
+		// 1. Get all of the bookmarks from the DB
+		const bookmarks = await Bookmark.find({});
+		// 2. Send them back to the client as JSON
+		res.json(bookmarks);
+	} catch (err) {
+		// if there's an error, pass it on!
+		next(err);
+	}
+});
+```
+
+</details>
 
 To test things out, we'll need to import the bookmarks controller and then use it:
 
 ```js
 /* START CONTROLLERS HERE */
 
-const bookmarksController = require('./controllers/bookmarks');
+const bookmarksController = require('./controllers/bookmarksController');
 app.use('/api/bookmarks/', bookmarksController);
 
 /* END CONTROLLERS HERE */
 ```
 
-The `app.use('/api/bookmarks/', bookmarksController)` method here takes two arguments.  It lets us define the base path
-for all requests that will be sent to the bookmark controller.  This means that we won't be using the `/api/bookmarks` inside our controller. 
+The `app.use('/api/bookmarks/', bookmarksController)` method here takes two arguments. It lets us define the base path
+for all requests that will be sent to the bookmark controller. This means that we won't be using the `/api/bookmarks` inside our controller.
 
 ### We do: Get bookmark by ID
 
@@ -279,8 +356,8 @@ First let's add the route and console log:
 
 ```js
 // Show: Get a Bookmark by ID
-router.get("/:id", (req, res, next) => {
-  console.log(req.params)
+router.get('/:id', (req, res, next) => {
+	console.log(req.params);
 });
 ```
 
@@ -291,27 +368,25 @@ object called `params`.
 
 ```js
 // Show: Get a Bookmark by ID
-router.get("/:id", (req, res, next) => {
-  // 1. Find the Bookmark by its unique ID
-  // 2. Send it back to the client as JSON
-  // 3. If there's an error pass it on!
+router.get('/:id', (req, res, next) => {
+	// 1. Find the Bookmark by its unique ID
+	// 2. Send it back to the client as JSON
+	// 3. If there's an error pass it on!
 });
-
 ```
 
-How can we find an item in the database by it's id?  Do we have a pattern to use for this?
+How can we find an item in the database by it's id? Do we have a pattern to use for this?
 
 ```js
 // Show: Get a Bookmark by ID
-router.get("/:id", (req, res, next) => {
-  // 1. Find the Bookmark by its unique ID
-  Bookmark.findById(req.params.id)
-  // 2. Send it back to the client as JSON
-    .then((bookmark) => res.json(bookmark))  
-  // 3. If there's an error pass it on!
-    .catch(next);
+router.get('/:id', (req, res, next) => {
+	// 1. Find the Bookmark by its unique ID
+	Bookmark.findById(req.params.id)
+		// 2. Send it back to the client as JSON
+		.then((bookmark) => res.json(bookmark))
+		// 3. If there's an error pass it on!
+		.catch(next);
 });
-
 ```
 
 ### GET requests with Postman
@@ -338,7 +413,6 @@ two urls.
 If we're just testing GET routes, we can use either Postman or the browser. But
 for anything more, we need to use postman, because its easier to send data.
 
-
 ### Creating Data + Body Parser
 
 > The C in CRUD
@@ -347,13 +421,13 @@ There are a bunch of different methods we can use to retrieve data, but there's
 really only one used to create new data: `.create()`
 
 ```js
-router.post("/", (req, res, next) => {
-  // 1. Use the data in the req body to create a new bookmark
-  Bookmark.create(req.body)
-    // 2. If the create is successful, send back the record that was inserted
-    .then(bookmark => res.json(bookmark))
-    // 3. If there was an error, pass it on!
-    .catch(next)
+router.post('/', (req, res, next) => {
+	// 1. Use the data in the req body to create a new bookmark
+	Bookmark.create(req.body)
+		// 2. If the create is successful, send back the record that was inserted
+		.then((bookmark) => res.json(bookmark))
+		// 3. If there was an error, pass it on!
+		.catch(next);
 });
 ```
 
@@ -395,10 +469,10 @@ Postman is a great tool that I hope you use all the time.
 1. Launch Postman.
 2. Enter `localhost:8080/api/bookmarks` into the bar at the top of the screen.
 3. Click on headers and add the following
-	- Select `POST` as the request type
-	- Under headers tab, specify the `Content-Type` as `application/json`. This allows the 
-	client tells the server what type of data is actually sent.
-   > ![Postman POST header config](./images/postRequestHeader.png)
+   - Select `POST` as the request type
+   - Under headers tab, specify the `Content-Type` as `application/json`. This allows the
+     client tells the server what type of data is actually sent.
+     > ![Postman POST header config](./images/postRequestHeader.png)
 4. Then, click on the body tab, select the `raw` radio button, and enter
    the new bookmark we'd like to create in the database.
    > ![Postman POST body config](./images/postRequestBody.png)
@@ -433,9 +507,9 @@ You'll use the model method `findOneAndUpdate()` which takes three arguments:
 1. the query to find a record to be updated (same as `find({})` uses)
 2. the new data to update the old record (an object)
 3. an additional option so Mongoose returns the updated document (the default is
-  the original document). You can read more about the possible options
-  [here](https://mongoosejs.com/docs/api.html#model_Model.findOneAndUpdate), and
-  this does not have to be anything more `{ new: true }` as the third argument
+   the original document). You can read more about the possible options
+   [here](https://mongoosejs.com/docs/api.html#model_Model.findOneAndUpdate), and
+   this does not have to be anything more `{ new: true }` as the third argument
 
 What HTTP verbs should you use for each? What routes should they go on?
 
@@ -467,14 +541,14 @@ We'll start by adding relations to the bookmark models.
 
 ```js
 const BookmarkSchema = new mongoose.Schema({
-  title: String,
-  url: String,
-  owner: {
-    // References use the type ObjectId
-    type: mongoose.Schema.Types.ObjectId,
-    // the name of the model to which they refer
-    ref: 'User'
-  } 
+	title: String,
+	url: String,
+	owner: {
+		// References use the type ObjectId
+		type: mongoose.Schema.Types.ObjectId,
+		// the name of the model to which they refer
+		ref: 'User',
+	},
 });
 ```
 
@@ -506,12 +580,12 @@ This pattern should look familiar. We take the parsed object from the request
 body and pass it directly into `create()`
 
 ```js
-router.post("/", (req, res, next) => {
-  User.create(req.body)
-    .then(user => {
-      res.json(user);
-    })
-    .catch(next)
+router.post('/', (req, res, next) => {
+	User.create(req.body)
+		.then((user) => {
+			res.json(user);
+		})
+		.catch(next);
 });
 ```
 
@@ -527,23 +601,22 @@ const User = require('../models/User');
 const bookmarkseeds = require('./seeds.json');
 
 Bookmark.deleteMany({})
-  .then(() => User.deleteMany({}))
-  .then(() => {
-    return User.create({ email: 'fake@email.com', name: 'Fake Person' })
-      .then((user) =>
-        bookmarkseeds.map((bookmark) => ({ ...bookmark, owner: user._id }))
-      )
-      .then((bookmarks) => Bookmark.insertMany(bookmarks));
-  })
-  .then(console.log)
-  .catch(console.error)
-  .finally(() => {
-    process.exit();
-  });
-
+	.then(() => User.deleteMany({}))
+	.then(() => {
+		return User.create({ email: 'fake@email.com', name: 'Fake Person' })
+			.then((user) =>
+				bookmarkseeds.map((bookmark) => ({ ...bookmark, owner: user._id }))
+			)
+			.then((bookmarks) => Bookmark.insertMany(bookmarks));
+	})
+	.then(console.log)
+	.catch(console.error)
+	.finally(() => {
+		process.exit();
+	});
 ```
 
-Now we can see that the bookmarks all have an owner assigned to them.  We could use a second API call to get the details for the owner, but Mongoose makes it easy to add virtual data to our response object with the `.populate()` method. Change the index and show routes for the bookmarks as follows:
+Now we can see that the bookmarks all have an owner assigned to them. We could use a second API call to get the details for the owner, but Mongoose makes it easy to add virtual data to our response object with the `.populate()` method. Change the index and show routes for the bookmarks as follows:
 
 ```diff
 
@@ -565,7 +638,6 @@ router.get('/:id', (req, res, next) => {
 
 Test the results in the browser or Postman!!!
 
-
 ## Redirects
 
 Since all of our routes are defined on `/api/something`, we sometimes want a
@@ -578,8 +650,8 @@ We'll define a route for the base url (`/`), and have it redirect the user to
 In your index.js file, above the definitions for the API routes:
 
 ```js
-app.get("/", (req, res) => {
-  res.redirect("/api/bookmarks");
+app.get('/', (req, res) => {
+	res.redirect('/api/bookmarks');
 });
 ```
 
@@ -624,7 +696,7 @@ const app = express()
 
 ## Handling Errors
 
-We've been using the `next` parameter in our controllers to pass our errors onto the _"next"_ piece of middleware in our application.  At this point we don't have anything to do the job of handling the errors though, so let's add something to do that.  Inside the `index.js` add the following code **right after the comment ending the controllers**:
+We've been using the `next` parameter in our controllers to pass our errors onto the _"next"_ piece of middleware in our application. At this point we don't have anything to do the job of handling the errors though, so let's add something to do that. Inside the `index.js` add the following code **right after the comment ending the controllers**:
 
 ```js
 ...
@@ -637,7 +709,7 @@ app.use((err, req, res, next) => {
 });
 ```
 
-Because we need to send an error back to the client if something goes wrong, we're going to check the errors that get passed through this middleware for a status code and a message, if none exists, we'll just use a generic 500 Internal Server Error.  The `res.status()` method allows us to set the status on an outgoing response, but it won't actually send the response.  We'll use the `send()` method to handle sending the response and give it the message stored in our variable.
+Because we need to send an error back to the client if something goes wrong, we're going to check the errors that get passed through this middleware for a status code and a message, if none exists, we'll just use a generic 500 Internal Server Error. The `res.status()` method allows us to set the status on an outgoing response, but it won't actually send the response. We'll use the `send()` method to handle sending the response and give it the message stored in our variable.
 
 ## Additional Resources
 
