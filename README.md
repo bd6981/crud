@@ -110,7 +110,7 @@ don't have it already. Be sure to download the desktop application.
 
 Postman is going to substitute for a front end for our testing purposes, so that we can make `POST`, `PUT/PATCH`, AND `DELETE` requests without a user interface. Our browser URL bars make `GET` requests by default.
 
-## Setup ExpressJS
+## Setup Express.js
 
 Before we can do anything, we need to actually make Express work and listen for
 requests.
@@ -123,22 +123,44 @@ requests.
 1. Add a `.gitignore` and write to it by running:
 
 ```cli
-$ echo -e "node_modules \n .env" > .gitignore
+$ echo -e "node_modules \n.env" > .gitignore
 ```
 
 In your `index.js` file add this:
 
 ```js
+//=============================================================================
+// Basic Config
+//=============================================================================
 const express = require('express');
 // instantiate express
 const app = express();
+app.set('port', process.env.PORT || 8000);
 
+//=============================================================================
+// Middleware
+//=============================================================================
+// `express.json` parses application/json request data and
+//  adds it to the request object as request.body
+app.use(express.json());
+// `express.urlencoded` parses x-ww-form-urlencoded request data and
+//  adds it to the request object as request.body
+app.use(express.urlencoded({ extended: true }));
+
+//=============================================================================
+// ROUTES
+//=============================================================================
+// Redirect
+app.get('/', (req, res) => {
+	res.redirect('/api/bookmarks');
+});
 /* START CONTROLLERS HERE */
 
 /* END CONTROLLERS HERE */
 
-app.set('port', process.env.PORT || 8000);
-
+//=============================================================================
+// START SERVER
+//=============================================================================
 app.listen(app.get('port'), () => {
 	console.log(`✅ PORT: ${app.get('port')} 🌟`);
 });
@@ -147,9 +169,11 @@ app.listen(app.get('port'), () => {
 This is great! Now our server should run with `nodemon`. But it doesn't do
 anything yet. We need to write some logic for what our application needs to do!
 
+See commit [here](https://git.generalassemb.ly/esin87/express-book-e-demo/commit/cff116d3354716a4490f58b3f6e60610889fb956).
+
 ### Database Connection
 
-In your `.env` file, create a variable called `DATABASE_URL` and set it equal to your connection string from the MongoDB lecture.
+Create a `.env` file and make sure it's being ignored by Git. In your `.env` file, create a variable called `DATABASE_URL` and set it equal to your connection string from the MongoDB lecture.
 
 Give the database a meaningful name, like `booke`.
 
@@ -172,11 +196,7 @@ const mongoURI = process.env.DATABASE_URL;
 const db = mongoose.connection;
 
 // Connect to Mongo
-mongoose.connect(mongoURI, {
-	useNewUrlParser: true,
-	useUnifiedTopology: true,
-	useCreateIndex: true,
-});
+mongoose.connect(mongoURI);
 
 // Connection Error/Success - optional but can be helpful
 // Define callback functions for various events
@@ -194,18 +214,20 @@ db.on('open', () => {
 module.exports = mongoose;
 ```
 
+See commit [here](https://git.generalassemb.ly/esin87/express-book-e-demo/commit/4f3bf9a9f3e8b720011d2db029876a9df2b1c098).
+
 ### Build our models
 
 Create a folder in your repo called `models`.
 
-We have two models for our Book-E application -- a bookmark and a user. Let's build them out before we attempt to use them.
+We have two models for our Book-E application -- a bookmark and a user. Let's build them out.
 
 Here's an example for the Bookmark model -- let's talk through this!
 
 ```js
 // models/Bookmark.js
 // require the mongoose package from the connection pool
-const mongoose = require('../connection');
+const mongoose = require('../db/connection');
 
 // make a new schema with 2 properties, and assign it to a variable
 const BookmarkSchema = new mongoose.Schema({
@@ -221,7 +243,7 @@ module.exports = Bookmark;
 ```
 
 Following this same pattern, try to build out the User model. It should have 2
-properties. We'll add the relation between them later:
+properties. We'll add the relationship between them later:
 
 - email: String
 - name: String
@@ -230,9 +252,11 @@ Check out the
 [mongoose schematypes](https://mongoosejs.com/docs/schematypes.html) for all the
 various types that aren't strings.
 
+See commit [here](https://git.generalassemb.ly/esin87/express-book-e-demo/commit/04459d77f84107e6e29030988e8434d273883cc2).
+
 ### Seed the database
 
-Create a `seeds.json` and `seeds.js` file inside the db directory. For now, let's just create a seed file for the Bookmarks. This is a common approach when we want to populate our application with data for development purposes.
+Create a `seeds.json` and `seeds.js` file inside the `db` directory. For now, let's just create a seed file for the Bookmarks. This is a common approach when we want to populate our application with data for development purposes.
 
 ```json
 [
@@ -259,12 +283,16 @@ Create a `seeds.json` and `seeds.js` file inside the db directory. For now, let'
 ]
 ```
 
+We won't seed our database programmitcally just yet -- we'll do so in a little bit! For now, let's head to to our MongoDB Atlas cluster and manually add in some Bookmarks data just so that we have data to play around with.
+
+See commit [here](https://git.generalassemb.ly/esin87/express-book-e-demo/commit/06727fd596a89aa956b0c360057848ca6dab6e14).
+
 ### Making our first route
 
 Let's create an **index** route to display all of the bookmarks in our database. Remember the signature for the `get` method? It looks like all of the [Express route methods](https://expressjs.com/en/guide/routing.html#route-methods). We haven't seen the `next` parameter used yet, but we'll add it here for completeness:
 
 ```js
-// controllers/bookmarks.js
+// controllers/bookmarksController.js
 
 // Index: GET all the bookmarks
 router.get('/', (req, res, next) => {
@@ -287,18 +315,22 @@ This is the basis for how we will send data from the database to the front end.
 Create a folder called `controllers` in your application. In your `controllers` folder, create a file called `bookmarksController.js`.
 
 Our controller is really intended to serve data from database, which means we
-need to query the database. To this end, we will use the model which defined
-using mongoose.
+need to query the database. To this end, we will use the model we defined
+using Mongoose.
 
 Next, let's fill out the routes for **reading** from the database.
 
 ```js
 //controllers/bookmarksController.js
+// require the Express module
 const express = require('express');
+// instantiate a router -- this will hold all the logic
+// for the URLs + methods for this resource
 const router = express.Router();
 // import the bookmark model
 const Bookmark = require('../models/Bookmark');
 
+// Add routes to the router object
 // Index: GET all the bookmarks
 router.get('/', (req, res, next) => {
 	// 1. Get all of the bookmarks from the DB
@@ -313,7 +345,7 @@ router.get('/', (req, res, next) => {
 module.exports = router;
 ```
 
-Note: This syntax follows the Promise chaining that we've seen throughout Units 1 and 2. Now that we know how to use `async/await` and `try/catch` syntax, how might we refactor our code to be more modern and avoid callback hell?
+Note: This syntax follows the Promise chaining that we've seen throughout Units 1 and 2. Now that we know how to use `async/await` and `try/catch` syntax, how might we refactor our code to be more modern and avoid so-called "callback hell"?
 
 <details><summary>Solution</summary>
 
@@ -348,6 +380,10 @@ app.use('/api/bookmarks/', bookmarksController);
 The `app.use('/api/bookmarks/', bookmarksController)` method here takes two arguments. It lets us define the base path
 for all requests that will be sent to the bookmark controller. This means that we won't be using the `/api/bookmarks` inside our controller.
 
+Run your server using `nodemon` and try going to [http://localhost:8000/api/bookmarks](http://localhost:8000/api/bookmarks) to see your bookmarks data!
+
+See commit [here](https://git.generalassemb.ly/esin87/express-book-e-demo/commit/c05d8f208da01ea718d562a79841f7f99c7fc007)
+
 ### We do: Get bookmark by ID
 
 Using the same bookmark controller and model, we'll add a **show** route.
@@ -375,26 +411,33 @@ router.get('/:id', (req, res, next) => {
 });
 ```
 
-How can we find an item in the database by it's id? Do we have a pattern to use for this?
+How can we find an item in the database by its id? Do we have a pattern to use for this?
 
 ```js
 // Show: Get a Bookmark by ID
-router.get('/:id', (req, res, next) => {
-	// 1. Find the Bookmark by its unique ID
-	Bookmark.findById(req.params.id)
+router.get('/:id', async (req, res, next) => {
+	try {
+		// 1. Find the Bookmark by its unique ID
+		const bookmarks = await Bookmark.findById(req.params.id);
 		// 2. Send it back to the client as JSON
-		.then((bookmark) => res.json(bookmark))
-		// 3. If there's an error pass it on!
-		.catch(next);
+		res.json(bookmarks);
+	} catch (err) {
+		// if there's an error, pass it on!
+		next(err);
+	}
 });
 ```
+
+Run your server and make sure you are able to retrieve a Bookmark by its id!
+
+See commit [here](https://git.generalassemb.ly/esin87/express-book-e-demo/commit/134606ed2464170316b6c977668f875c19ccfcd2).
 
 ### GET requests with Postman
 
 Launch Postman. Make sure you're logged in (create an account if you don't have
 one).
 
-Ensure `mongod` and `nodemon` are running with no errors.
+Ensure your server is running with no errors.
 
 - Enter `localhost:8000/api/bookmarks/` in the address bar
 - Ensure the dropdown says `GET`
@@ -405,15 +448,10 @@ You should see the response below, containing all the bookmarks!
 Also test the show route. You should see a
 single bookmark as the response.
 
-Now let's test these routes in the browser!
-
-Make sure `nodemon` is running and you don't have any errors, and open the same
-two urls.
-
 If we're just testing GET routes, we can use either Postman or the browser. But
-for anything more, we need to use postman, because its easier to send data.
+for anything more, we need to use Postman, because it's easier to send data. We can also save all of our requests for a given application that we're developing in a collection, making the requests organized and reusable!
 
-### Creating Data + Body Parser
+### Creating Data
 
 > The C in CRUD
 
@@ -421,33 +459,25 @@ There are a bunch of different methods we can use to retrieve data, but there's
 really only one used to create new data: `.create()`
 
 ```js
-router.post('/', (req, res, next) => {
-	// 1. Use the data in the req body to create a new bookmark
-	Bookmark.create(req.body)
-		// 2. If the create is successful, send back the record that was inserted
-		.then((bookmark) => res.json(bookmark))
+// Create: POST a Bookmark
+router.post('/', async (req, res, next) => {
+	try {
+		// 1. Use the data in the req body to create a new bookmark
+		const newBookmark = await Bookmark.create(req.body);
+		// 2. If the create is successful, send back the record that was inserted, specifying 201 status for Created
+		res.status(201).json(newBookmark);
+	} catch (err) {
 		// 3. If there was an error, pass it on!
-		.catch(next);
+		next(err);
+	}
 });
 ```
 
-Unfortunately, this won't work without some additional setup.
+Remember that this `POST` request will only work with the middleware we've added. Express needs to be told how to handle certain types of requests - in this case, a POST request that also contains some JSON (since that's what we'll be sending).
 
-Express needs to be told how to handle certain types of requests - in this case,
-a POST request that also contains some JSON (since that's what we'll be
-sending).
-
-We'll add the `express.json` middleware to be able to interpret the
-request body. This will automatically parse the json and put it into the
-`request` object for us.
-
-Let's require and configure it in `index.js`...
+We added the `express.json` middleware to be able to interpret the request body. This will automatically parse the incoming JSON and put it into the `request` object for us.
 
 ```js
-const express = require('express')
-const app = express()
-const bookmarksController = require('./controllers/bookmarks')
-
 // Use middleware to parse the data in the HTTP request body and add
 // a property of body to the request object containing a POJO with with data.
 app.use(express.json())
@@ -457,9 +487,9 @@ app.use(express.urlencoded({ extended: true }));
 ...
 ```
 
-**Remember this middleware must go before our controllers run.**
+**Remember this middleware must go before our controllers run. Failing to load middleware before routes has been the source of numerous bugs.**
 
-Once we have the route defined and JSON parsing enabled, we can send some POST
+Once we have the route defined, we can send some POST
 requests using postman.
 
 Postman is a great tool that I hope you use all the time.
@@ -467,7 +497,7 @@ Postman is a great tool that I hope you use all the time.
 ### Sending Data with Postman
 
 1. Launch Postman.
-2. Enter `localhost:8080/api/bookmarks` into the bar at the top of the screen.
+2. Enter `localhost:8000/api/bookmarks` into the bar at the top of the screen.
 3. Click on headers and add the following
    - Select `POST` as the request type
    - Under headers tab, specify the `Content-Type` as `application/json`. This allows the
@@ -478,15 +508,12 @@ Postman is a great tool that I hope you use all the time.
    > ![Postman POST body config](./images/postRequestBody.png)
 5. Hit send! Scroll down and you'll the response in the panel below.
 
-> Note: These headers are always required when dealing with JSON. Depending on
-> the client that we use (fetch, axios, etc), they can detect the type of data
-> we're working with and set the headers for us automatically. Postman makes us
-> do it manually.
-
 What is the response that we get back?
 
 Check your console (wherever nodemon is running) and you'll hopefully see some
 output. Postman will also show the response from the server.
+
+See commit [here](https://git.generalassemb.ly/esin87/express-book-e-demo/commit/bbe432b28a4bc93e48f21c1e27d3ce940003a088).
 
 ### You do: Updating Data (15 min)
 
