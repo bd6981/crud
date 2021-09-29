@@ -235,9 +235,17 @@ See commit [here](https://git.generalassemb.ly/esin87/express-book-e-demo/commit
 
 Create a folder in your repo called `models`.
 
-We have two models for our Book-E application -- a bookmark and a user. Let's build them out.
+We have two models for our Book-E application -- a bookmark and a user. Let's think about how we're going to build them out.
 
-Here's an example for the Bookmark model -- let's talk through this!
+#### Data Modeling and Entity-Relationship Diagrams (ERDs)
+
+As part of the planning for your future projects, you'll need to plan the data model and document it with an [Entity-Relationship-Diagram (ERD)](https://www.guru99.com/er-diagram-tutorial-dbms.html). This is a commonly-used tool in organizations to plan and document the models and their relationships for a database.
+
+Here's an ERD that documents the data model for Booke:
+
+![Screen Shot 2021-09-29 at 9 15 43 AM](https://media.git.generalassemb.ly/user/21811/files/e60ff000-2105-11ec-988c-29d8fb479f10)
+
+Here's an example of the code for the Bookmark model -- let's talk through this!
 
 ```js
 // models/Bookmark.js
