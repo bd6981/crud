@@ -729,13 +729,13 @@ Test the results in the browser or Postman!!!
 
 ## CORS
 
-Sometimes we need we'll need to add the `cors` dependency. CORS stands for cross origin resource sharing. Express is enforcing a CORS policy that cross-origin requests without proper configuration on the back end.
+Sometimes we need we'll need to add the `cors` dependency. CORS stands for Cross Origin Resource Sharing. Express is enforcing a CORS policy that blocks cross-origin requests without proper configuration on the back end.
 
 You can think of origins as website domains, like `localhost:3000`, `localhost:8080`, `google.com`, `fuzzy-panda-cat.herokuapp.com`, and so on.
 
 Because our server runs on `localhost:8000`, any requests that come from somewhere that is NOT `localhost:8000` will be blocked, by default. So if we had a website that made `fetch()` requests to `localhost:8000`, they would be blocked unless we configure cors in express.
 
-The npm package `cors` is middleware that tells express to accept requests from different origins. By default it just enables ALL origins.
+The npm package `cors` is middleware that tells Express to accept requests from different origins. By default it just enables ALL origins. For better security, you can [configure](https://www.npmjs.com/package/cors#configuring-cors) the `cors` middleware to enable cross-origin requests from specific origins (URLs). 
 
 > [Here's a good article](https://developer.mozilla.org/en-US/docs/Web/HTTP/CORS)
 > on MDN about what CORS is.
