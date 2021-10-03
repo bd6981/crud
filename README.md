@@ -235,9 +235,17 @@ See commit [here](https://git.generalassemb.ly/esin87/express-book-e-demo/commit
 
 Create a folder in your repo called `models`.
 
-We have two models for our Book-E application -- a bookmark and a user. Let's build them out.
+We have two models for our Book-E application -- a bookmark and a user. Let's think about how we're going to build them out.
 
-Here's an example for the Bookmark model -- let's talk through this!
+#### Data Modeling and Entity-Relationship Diagrams (ERDs)
+
+As part of the planning for your future projects, you'll need to plan the data model and document it with an [Entity-Relationship-Diagram (ERD)](https://www.guru99.com/er-diagram-tutorial-dbms.html). This is a commonly-used tool in organizations to plan and document the models and their relationships for a database.
+
+Here's an ERD that documents the data model for Booke:
+
+![Screen Shot 2021-09-29 at 9 15 43 AM](https://media.git.generalassemb.ly/user/21811/files/e60ff000-2105-11ec-988c-29d8fb479f10)
+
+Here's an example of the code for the Bookmark model -- let's talk through this!
 
 ```js
 // models/Bookmark.js
@@ -721,13 +729,13 @@ Test the results in the browser or Postman!!!
 
 ## CORS
 
-Sometimes we need we'll need to add the `cors` dependency. CORS stands for cross origin resource sharing. Express is enforcing a CORS policy that cross-origin requests without proper configuration on the back end.
+Sometimes we need we'll need to add the `cors` dependency. CORS stands for Cross Origin Resource Sharing. Express is enforcing a CORS policy that blocks cross-origin requests without proper configuration on the back end.
 
 You can think of origins as website domains, like `localhost:3000`, `localhost:8080`, `google.com`, `fuzzy-panda-cat.herokuapp.com`, and so on.
 
 Because our server runs on `localhost:8000`, any requests that come from somewhere that is NOT `localhost:8000` will be blocked, by default. So if we had a website that made `fetch()` requests to `localhost:8000`, they would be blocked unless we configure cors in express.
 
-The npm package `cors` is middleware that tells express to accept requests from different origins. By default it just enables ALL origins.
+The npm package `cors` is middleware that tells Express to accept requests from different origins. By default it just enables ALL origins. For better security, you can [configure](https://www.npmjs.com/package/cors#configuring-cors) the `cors` middleware to enable cross-origin requests from specific origins (URLs). 
 
 > [Here's a good article](https://developer.mozilla.org/en-US/docs/Web/HTTP/CORS)
 > on MDN about what CORS is.
